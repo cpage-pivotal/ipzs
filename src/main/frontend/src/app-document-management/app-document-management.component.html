@@ -1,0 +1,217 @@
+    <div class="document-management-container">
+      <!-- Header Section -->
+      <mat-card class="header-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>description</mat-icon>
+            Legislative Document Management
+          </mat-card-title>
+          <mat-card-subtitle>
+            Sample Data Generation & Vector Store Management
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="action-buttons">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="generateSampleData()"
+              [disabled]="loading()">
+              @if (loading()) {
+                <mat-spinner diameter="20"></mat-spinner>
+                Generating...
+              } @else {
+                <mat-icon>add</mat-icon>
+                Generate Sample Documents
+              }
+            </button>
+
+            <button
+              mat-raised-button
+              color="accent"
+              (click)="refreshDocuments()"
+              [disabled]="loading()">
+              <mat-icon>refresh</mat-icon>
+              Refresh List
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Statistics Cards -->
+      <div class="stats-grid">
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon color="primary">description</mat-icon>
+              <div class="stat-numbers">
+                <div class="stat-value">{{ totalDocuments() }}</div>
+                <div class="stat-label">Total Documents</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon color="accent">update</mat-icon>
+              <div class="stat-numbers">
+                <div class="stat-value">{{ currentDocuments() }}</div>
+                <div class="stat-label">Currently Effective</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-content>
+            <div class="stat-content">
+              <mat-icon color="warn">history</mat-icon>
+              <div class="stat-numbers">
+                <div class="stat-value">{{ supersededDocuments() }}</div>
+                <div class="stat-label">Superseded Documents</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Document Search and Filters -->
+      <mat-card class="search-card">
+        <mat-card-content>
+          <div class="search-section">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search documents</mat-label>
+              <input
+                matInput
+                [(ngModel)]="searchQuery"
+                (input)="onSearchChange()"
+                placeholder="Enter search terms...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="date-field">
+              <mat-label>Context Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                [(ngModel)]="contextDate"
+                (dateChange)="onDateChange()"
+                placeholder="Select context date">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Document List -->
+      <mat-card class="documents-card">
+        <mat-card-header>
+          <mat-card-title>
+            Documents
+            @if (filteredDocuments().length !== totalDocuments()) {
+              <span class="filter-count">({{ filteredDocuments().length }} of {{ totalDocuments() }})</span>
+            }
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          @if (loading()) {
+            <div class="loading-container">
+              <mat-spinner></mat-spinner>
+              <p>Loading documents...</p>
+            </div>
+          } @else if (filteredDocuments().length === 0) {
+            <div class="empty-state">
+              <mat-icon>description</mat-icon>
+              <h3>No documents found</h3>
+              <p>Try adjusting your search criteria or generate sample documents.</p>
+            </div>
+          } @else {
+            <mat-accordion multi="true">
+              @for (doc of filteredDocuments(); track doc.documentId) {
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                      <div class="document-title">
+                        <mat-icon
+                          [color]="getDocumentStatusColor(doc)"
+                          class="document-icon">
+                          {{ getDocumentIcon(doc) }}
+                        </mat-icon>
+                        {{ doc.title }}
+                      </div>
+                    </mat-panel-title>
+                    <mat-panel-description>
+                      <div class="document-meta">
+                        <span class="document-type">{{ doc.documentType }}</span>
+                        <span class="document-date">
+                          Effective: {{ doc.effectiveDate | date:'shortDate' }}
+                        </span>
+                      </div>
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+
+                  <div class="document-details">
+                    <div class="document-info">
+                      <div class="info-row">
+                        <strong>Document ID:</strong> {{ doc.documentId }}
+                      </div>
+                      <div class="info-row">
+                        <strong>Document Number:</strong> {{ doc.documentNumber }}
+                      </div>
+                      <div class="info-row">
+                        <strong>Issuing Authority:</strong> {{ doc.issuingAuthority }}
+                      </div>
+                      <div class="info-row">
+                        <strong>Publication Date:</strong> {{ doc.publicationDate | date:'longDate' }}
+                      </div>
+                      <div class="info-row">
+                        <strong>Effective Date:</strong> {{ doc.effectiveDate | date:'longDate' }}
+                      </div>
+                      @if (doc.expirationDate) {
+                        <div class="info-row">
+                          <strong>Expiration Date:</strong> {{ doc.expirationDate | date:'longDate' }}
+                        </div>
+                      }
+                    </div>
+
+                    @if (doc.keyProvisions.length > 0) {
+                      <div class="provisions-section">
+                        <h4>Key Provisions</h4>
+                        <mat-chip-set>
+                          @for (provision of doc.keyProvisions; track provision) {
+                            <mat-chip>{{ provision }}</mat-chip>
+                          }
+                        </mat-chip-set>
+                      </div>
+                    }
+
+                    @if (doc.supersedes && doc.supersedes.length > 0) {
+                      <div class="relationship-section">
+                        <h4>Supersedes</h4>
+                        <mat-chip-set>
+                          @for (superseded of doc.supersedes; track superseded) {
+                            <mat-chip color="warn">{{ superseded }}</mat-chip>
+                          }
+                        </mat-chip-set>
+                      </div>
+                    }
+
+                    @if (doc.supersededBy) {
+                      <div class="relationship-section">
+                        <h4>Superseded By</h4>
+                        <mat-chip color="accent">{{ doc.supersededBy }}</mat-chip>
+                      </div>
+                    }
+                  </div>
+                </mat-expansion-panel>
+              }
+            </mat-accordion>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
