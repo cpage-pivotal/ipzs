@@ -1,10 +1,10 @@
-package org.tanzu.materialstarter;
+package org.tanzu.ipzs;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MaterialStarterApplicationTests {
+class LegislationAssistantApplicationTests {
 
     @Test
     void contextLoads() {

@@ -1,17 +1,23 @@
-# Legislation RAG Chatbot - Design & Implementation Plan
+# IPZS Legislation Assistant - Design & Current Implementation Status
 
 ## Project Overview
 
-This document outlines the design and implementation plan for a legislation knowledge management system for **Istituto Poligrafico e Zecca dello Stato** (IPZS). The system leverages Retrieval Augmented Generation (RAG) patterns with Spring AI 1.1.0-M2 to enable intelligent querying of Italian legislation through a conversational interface.
+This document outlines the current implementation status of the legislation knowledge management system for **Istituto Poligrafico e Zecca dello Stato** (IPZS). The system leverages Retrieval Augmented Generation (RAG) patterns with Spring AI 1.1.0-M2 to enable intelligent querying of Italian legislation through a conversational interface.
+
+**Current Status**: Initial development phase with basic chat functionality implemented.
 
 ## Executive Summary
 
-The system provides:
-- Intelligent legislation search and retrieval using vector similarity
-- Temporal context awareness for historically accurate queries
-- Natural language interaction through a chatbot interface
-- Cloud-native deployment on Cloud Foundry
-- Scalable document ingestion and processing pipeline
+The system is designed to provide:
+- ✅ **Basic Chat Interface**: Angular 20 frontend with Material Design
+- ✅ **Spring AI Integration**: RAG-enabled chat client with vector store support
+- ✅ **Modern Architecture**: Java 21 with Spring Boot 3.5.5
+- 🚧 **Vector Store Setup**: PostgreSQL + PgVector configuration ready
+- 📋 **Pending**: Document ingestion and processing pipeline
+- 📋 **Pending**: Temporal context awareness for historically accurate queries
+- 📋 **Pending**: Cloud-native deployment on Cloud Foundry
+
+**Legend**: ✅ Implemented | 🚧 In Progress | 📋 Planned
 
 ## Architecture Overview
 
@@ -63,17 +69,19 @@ The system provides:
 - **Apache Tika** - Document parsing
 
 ### Frontend Technologies
-- **Angular 20** - Modern frontend framework with signals
+- **Angular 20** - Modern frontend framework with signals and zoneless change detection
 - **Angular Material 20** - Material Design 3 components
-- **TypeScript 5.7** - Type-safe JavaScript
+- **TypeScript 5.9** - Type-safe JavaScript
 - **SCSS** - Styling with Material Design tokens
 - **RxJS 7** - Reactive programming
+- **Standalone Components** - No NgModules, modern Angular architecture
 
 ### Infrastructure & Deployment
-- **Cloud Foundry** - PaaS platform
-- **Maven 3.9+** - Build automation
+- **Cloud Foundry** - PaaS platform (configured)
+- **Maven 3.9+** - Build automation with Frontend Maven Plugin
+- **Node.js v24.9.0** - Frontend build environment
 - **Docker** - Containerization (for local development)
-- **GitHub Actions** - CI/CD pipeline
+- **GitHub Actions** - CI/CD pipeline (planned)
 
 ## Database Design
 
@@ -145,266 +153,100 @@ CREATE TABLE chat_messages (
 
 ## Backend Implementation
 
-### Package Structure
+### Package Structure (Current Implementation)
 
 ```
 org.tanzu.ipzs.legislation
 ├── config/
-│   ├── SpringAIConfig.java
-│   ├── VectorStoreConfig.java
-│   └── CloudFoundryConfig.java
+│   ├── SpringAIConfig.java              ✅ Implemented
+│   └── DatabaseInitializer.java         ✅ Implemented
 ├── controller/
-│   ├── ChatController.java
-│   ├── DocumentController.java
-│   └── AdminController.java
-├── service/
+│   ├── ChatController.java              ✅ Implemented
+│   └── DocumentController.java          ✅ Implemented
+├── model/
+│   ├── dto/
+│   │   ├── ChatRequestDto.java (record) ✅ Implemented
+│   │   ├── ChatResponseDto.java (record)✅ Implemented
+│   │   └── DocumentMetadataDto.java     ✅ Implemented
+│   └── entity/
+│       ├── LegislationDocument.java     ✅ Implemented
+│       ├── DocumentChunk.java           ✅ Implemented
+│       └── ChatSession.java             ✅ Implemented
+├── service/                             📋 Planned
 │   ├── ChatService.java
 │   ├── DocumentIngestionService.java
 │   ├── VectorSearchService.java
 │   └── RAGService.java
-├── repository/
+├── repository/                          📋 Planned
 │   ├── LegislationDocumentRepository.java
 │   ├── DocumentChunkRepository.java
 │   └── ChatSessionRepository.java
-├── model/
-│   ├── dto/
-│   │   ├── ChatRequestDto.java (record)
-│   │   ├── ChatResponseDto.java (record)
-│   │   └── DocumentMetadataDto.java (record)
-│   └── entity/
-│       ├── LegislationDocument.java
-│       ├── DocumentChunk.java
-│       └── ChatSession.java
-├── vectorstore/
+├── vectorstore/                         📋 Planned
 │   ├── PgVectorStore.java
 │   └── MetadataFilter.java
-└── util/
+└── util/                                📋 Planned
     ├── DocumentParser.java
     └── ChunkingStrategy.java
 ```
 
 ### Key Spring AI Components
 
-#### 1. Vector Store Configuration
+#### 1. Current Spring AI Configuration
 
 ```java
 @Configuration
-public class VectorStoreConfig {
-    
+public class SpringAIConfig {
+
     @Bean
-    public PgVectorStore vectorStore(
-            JdbcTemplate jdbcTemplate,
-            EmbeddingModel embeddingModel) {
-        return PgVectorStore.builder()
-            .jdbcTemplate(jdbcTemplate)
-            .embeddingModel(embeddingModel)
-            .tableName("document_chunks")
-            .dimension(1536)
-            .build();
-    }
-    
-    @Bean
-    public EmbeddingModel embeddingModel() {
-        return new OpenAiEmbeddingModel(
-            OpenAiApi.builder()
-                .apiKey(apiKey)
-                .build());
+    public ChatClient chatClient(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
+        return chatClientBuilder
+                .defaultAdvisors(new QuestionAnswerAdvisor(vectorStore))
+                .build();
     }
 }
 ```
 
-#### 2. RAG Service with Date Filtering
+**Current Implementation**: Basic ChatClient with QuestionAnswerAdvisor configured. The vector store is auto-configured via Spring AI starter.
+
+#### 2. Chat Controller (Implemented)
 
 ```java
-@Service
-public class RAGService {
-    
-    public ChatResponse processQuery(
-            String query, 
-            LocalDate dateContext) {
-        
-        // Create metadata filter for date context
-        Filter dateFilter = FilterExpressionBuilder
-            .builder()
-            .lte("effective_date", dateContext)
-            .and(filter -> filter
-                .gt("expiration_date", dateContext)
-                .or()
-                .isNull("expiration_date"))
-            .build();
-        
-        // Perform similarity search with filter
-        List<Document> relevantDocs = vectorStore.similaritySearch(
-            SearchRequest.query(query)
-                .withTopK(5)
-                .withSimilarityThreshold(0.7)
-                .withFilterExpression(dateFilter)
-        );
-        
-        // Generate response using RAG
-        return chatModel.call(
-            new Prompt(
-                createPromptTemplate(query, relevantDocs),
-                ChatOptions.builder()
-                    .temperature(0.7)
-                    .build()
-            )
+@RestController
+@RequestMapping("/api/chat")
+@CrossOrigin(origins = "http://localhost:4200")
+public class ChatController {
+
+    private final ChatClient chatClient;
+
+    @PostMapping
+    public ChatResponseDto chat(@RequestBody ChatRequestDto request) {
+        String response = chatClient
+                .prompt(request.message())
+                .call()
+                .content();
+
+        return new ChatResponseDto(
+                response,
+                request.sessionId() != null ? request.sessionId() : UUID.randomUUID(),
+                List.of()
         );
     }
 }
 ```
 
-### Document Ingestion Pipeline
-
-1. **Document Upload**: Accept PDF/DOCX/HTML formats
-2. **Text Extraction**: Use Apache Tika for content extraction
-3. **Chunking**: Split documents into semantic chunks (500-1000 tokens)
-4. **Metadata Extraction**: Parse dates, authorities, document types
-5. **Embedding Generation**: Create vector embeddings via OpenAI
-6. **Storage**: Save chunks with embeddings to PgVector
-
-## Frontend Implementation
-
-### Angular Application Structure
-
-```
-src/main/frontend/src/app/
-├── core/
-│   ├── services/
-│   │   ├── chat.service.ts
-│   │   ├── document.service.ts
-│   │   └── date-context.service.ts
-│   └── models/
-│       ├── chat-message.model.ts
-│       └── document.model.ts
-├── features/
-│   ├── chat/
-│   │   ├── chat-container/
-│   │   ├── chat-input/
-│   │   ├── chat-messages/
-│   │   └── date-selector/
-│   └── admin/
-│       ├── document-upload/
-│       └── document-list/
-├── shared/
-│   ├── components/
-│   │   ├── loading-spinner/
-│   │   └── error-dialog/
-│   └── material/
-│       └── material.module.ts
-└── app.component.ts
-```
-
-### Key Frontend Components
-
-#### 1. Chat Service with Signals
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class ChatService {
-  private messagesSignal = signal<ChatMessage[]>([]);
-  private dateContextSignal = signal<Date>(new Date());
-  
-  public messages = computed(() => this.messagesSignal());
-  public dateContext = computed(() => this.dateContextSignal());
-  
-  sendMessage(content: string): Observable<ChatResponse> {
-    const request: ChatRequest = {
-      message: content,
-      dateContext: this.dateContextSignal(),
-      sessionId: this.sessionId
-    };
-    
-    return this.http.post<ChatResponse>(
-      '/api/chat', 
-      request
-    ).pipe(
-      tap(response => {
-        this.messagesSignal.update(messages => [
-          ...messages,
-          { type: 'user', content },
-          { type: 'assistant', content: response.message }
-        ]);
-      })
-    );
-  }
-}
-```
-
-#### 2. Material Design Chat Interface
-
-```typescript
-@Component({
-  selector: 'app-chat-container',
-  standalone: true,
-  imports: [CommonModule, MaterialModule],
-  template: `
-    <mat-card class="chat-container">
-      <mat-card-header>
-        <mat-card-title>Assistente Legislativo IPZS</mat-card-title>
-        <app-date-selector 
-          [currentDate]="dateContext()"
-          (dateChange)="onDateChange($event)">
-        </app-date-selector>
-      </mat-card-header>
-      
-      <mat-card-content class="chat-messages">
-        <app-chat-messages 
-          [messages]="messages()">
-        </app-chat-messages>
-      </mat-card-content>
-      
-      <mat-card-actions>
-        <app-chat-input 
-          (sendMessage)="onSendMessage($event)"
-          [disabled]="isLoading()">
-        </app-chat-input>
-      </mat-card-actions>
-    </mat-card>
-  `
-})
-export class ChatContainerComponent {
-  messages = this.chatService.messages;
-  dateContext = this.chatService.dateContext;
-  isLoading = signal(false);
-  
-  constructor(private chatService: ChatService) {}
-}
-```
-
-## Cloud Foundry Deployment
-
-### manifest.yml
-
-```yaml
-applications:
-  - name: ipzs-legislation-assistant
-    memory: 2G
-    instances: 2
-    buildpack: java_buildpack
-    path: target/legislation-assistant-1.0.0.jar
-    env:
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
-      SPRING_PROFILES_ACTIVE: cloud
-    services:
-      - postgres-pgvector
-      - openai-service
-    routes:
-      - route: legislation-assistant.apps.cf.ipzs.it
-```
-
-### Application Properties
+#### 3. Application Configuration
 
 ```properties
-# Cloud Foundry Profile
-spring.profiles.active=cloud
+# Application
+spring.application.name=ipzs-legislation-assistant
 
-# Database Configuration
-spring.datasource.url=${vcap.services.postgres-pgvector.credentials.uri}
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+# PostgreSQL Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/ipzs_legislation
+spring.datasource.username=postgres
+spring.datasource.password=postgres
 
 # Spring AI Configuration
-spring.ai.openai.api-key=${vcap.services.openai-service.credentials.api-key}
+spring.ai.openai.api-key=${OPENAI_API_KEY:your-api-key-here}
 spring.ai.openai.embedding.model=text-embedding-ada-002
 spring.ai.openai.chat.model=gpt-4-turbo
 
@@ -413,102 +255,244 @@ spring.ai.vectorstore.pgvector.dimension=1536
 spring.ai.vectorstore.pgvector.similarity-threshold=0.7
 ```
 
-## Implementation Phases
+**Note**: Date filtering and advanced RAG features are planned for future implementation.
 
-### Phase 1: Foundation (Weeks 1-2)
-- Set up project structure with Spring AI 1.1.0-M2
-- Configure PostgreSQL with PgVector extension
-- Implement basic Spring Boot REST endpoints
-- Create Angular project structure with Material Design
+### Document Ingestion Pipeline (Planned)
 
-### Phase 2: Data Layer (Weeks 3-4)
-- Design and implement database schema
-- Create JPA entities and repositories
-- Implement document ingestion service
-- Set up text extraction and chunking pipeline
+📋 **Future Implementation**:
+1. **Document Upload**: Accept PDF/DOCX/HTML formats
+2. **Text Extraction**: Use Apache Tika for content extraction
+3. **Chunking**: Split documents into semantic chunks (500-1000 tokens)
+4. **Metadata Extraction**: Parse dates, authorities, document types
+5. **Embedding Generation**: Create vector embeddings via OpenAI
+6. **Storage**: Save chunks with embeddings to PgVector
 
-### Phase 3: Vector Store Integration (Weeks 5-6)
-- Configure PgVector with Spring AI
-- Implement embedding generation service
-- Create vector search functionality
-- Add metadata filtering for date context
+**Dependencies Ready**: Apache Tika and PDFBox dependencies are configured in pom.xml.
 
-### Phase 4: RAG Implementation (Weeks 7-8)
-- Integrate OpenAI/Azure OpenAI for chat completion
-- Implement RAG service with prompt engineering
-- Add conversation context management
-- Create date-aware query filtering
+## Frontend Implementation
 
-### Phase 5: Frontend Development (Weeks 9-10)
-- Build Angular chat interface with Material Design
-- Implement date selector component
-- Create admin interface for document upload
-- Add real-time chat functionality
+### Angular Application Structure (Current Implementation)
 
-### Phase 6: Testing & Optimization (Weeks 11-12)
-- Unit and integration testing
-- Performance optimization for vector searches
-- UI/UX refinement
-- Security audit and improvements
+```
+src/main/frontend/src/app/
+├── core/                                ✅ Implemented
+│   ├── services/
+│   │   ├── chat.service.ts              ✅ Implemented
+│   │   └── document.service.ts          ✅ Implemented
+│   └── models/
+│       ├── chat-message.model.ts        ✅ Implemented
+│       └── document.model.ts            ✅ Implemented
+├── features/                            ✅ Partially Implemented
+│   └── chat/
+│       ├── chat-container/              ✅ Implemented
+│       ├── chat-input/                  ✅ Implemented
+│       ├── chat-messages/               ✅ Implemented
+│       └── date-selector/               ✅ Implemented
+├── shared/                              ✅ Implemented
+│   └── material/
+│       └── material.module.ts           ✅ Implemented
+├── app.ts                               ✅ Implemented
+├── app.config.ts                        ✅ Implemented (with zoneless)
+└── app.routes.ts                        ✅ Implemented
 
-### Phase 7: Deployment (Week 13)
+📋 **Planned**:
+└── admin/
+    ├── document-upload/
+    └── document-list/
+```
+
+### Key Frontend Components
+
+#### 1. Modern Angular Features (Implemented)
+
+**App Configuration with Zoneless Change Detection**:
+```typescript
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),
+    provideRouter(routes),
+    provideHttpClient(),
+    provideAnimationsAsync()
+  ]
+};
+```
+
+**Standalone App Component**:
+```typescript
+@Component({
+  selector: 'app-root',
+  imports: [ChatContainerComponent],
+  template: '<app-chat-container></app-chat-container>',
+  styleUrl: './app.scss'
+})
+export class App {}
+```
+
+#### 2. Chat Container with Modern Angular Features
+
+**Key Features Implemented**:
+- ✅ **Signals**: Used for reactive state management
+- ✅ **Standalone Components**: No NgModules required
+- ✅ **Template Control Flow**: Modern `@if` syntax for loading states
+- ✅ **Material Design 3**: Full Material UI integration
+- ✅ **Zoneless Change Detection**: Better performance
+
+```typescript
+@Component({
+  selector: 'app-chat-container',
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ChatInputComponent, ChatMessagesComponent, DateSelectorComponent],
+  template: `
+    <div class="chat-container">
+      <mat-card class="chat-card">
+        <mat-card-header>
+          <div class="header-content">
+            <div class="title-section">
+              <mat-card-title>Assistente Legislativo IPZS</mat-card-title>
+              <mat-card-subtitle>Sistema di consultazione legislativa intelligente</mat-card-subtitle>
+            </div>
+            <app-date-selector [currentDate]="chatService.dateContext()" (dateChange)="onDateChange($event)">
+            </app-date-selector>
+          </div>
+        </mat-card-header>
+
+        @if (isLoading()) {
+          <div class="loading-overlay">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        }
+      </mat-card>
+    </div>
+  `
+})
+export class ChatContainerComponent {
+  isLoading = signal(false);
+  constructor(public chatService: ChatService) {}
+}
+```
+
+## Cloud Foundry Deployment (Configured)
+
+The project includes Cloud Foundry configuration through:
+- ✅ **CF Environment Dependencies**: `java-cfenv-boot` and `java-cfenv-boot-tanzu-genai`
+- ✅ **Application Name**: `ipzs-legislation-assistant`
+- 🚧 **Manifest File**: Ready for CF deployment
+
+### Maven Build Integration
+
+```xml
+<plugin>
+    <groupId>com.github.eirslett</groupId>
+    <artifactId>frontend-maven-plugin</artifactId>
+    <version>1.15.1</version>
+    <configuration>
+        <workingDirectory>src/main/frontend</workingDirectory>
+        <installDirectory>target</installDirectory>
+    </configuration>
+    <executions>
+        <!-- Install Node.js v24.9.0 and npm -->
+        <!-- npm ci -->
+        <!-- ng build -->
+    </executions>
+</plugin>
+```
+
+**Build Process**:
+1. Maven installs Node.js v24.9.0 and npm
+2. Runs `npm ci` to install dependencies
+3. Executes `ng build` for production frontend
+4. Packages everything into Spring Boot JAR
+
+## Implementation Status & Next Steps
+
+### ✅ Completed (Phase 1)
+- ✅ Project structure with Spring AI 1.1.0-M2
+- ✅ Basic Spring Boot REST endpoints
+- ✅ Angular 20 project with Material Design
+- ✅ Modern Angular features (signals, zoneless, standalone components)
+- ✅ Basic chat interface functionality
+- ✅ Maven build integration with Frontend Maven Plugin
+
+### 🚧 In Progress (Phase 2)
+- 🚧 Database schema implementation (entities created)
+- 🚧 Vector Store configuration (dependencies ready)
+
+### 📋 Next Steps (Phases 2-3)
+- **Immediate Priority**:
+  1. Implement JPA repositories
+  2. Set up PgVector database initialization
+  3. Create document ingestion REST endpoints
+  4. Implement file upload functionality
+
+- **Short Term**:
+  1. Add Apache Tika text extraction
+  2. Implement document chunking strategy
+  3. Connect vector store to chat functionality
+  4. Add metadata filtering for date context
+
+### 📋 Future Phases (4-7)
+- **RAG Implementation**: Advanced prompt engineering and conversation context
+- **Frontend Enhancements**: Admin interface for document management
+- **Testing & Optimization**: Performance and security improvements
+- **Deployment**: Cloud Foundry production configuration
+
+## Technical Architecture Decisions
+
+### Current Technology Choices
+- **Java 21**: Modern language features (records, pattern matching)
+- **Spring Boot 3.5.5**: Latest stable version with native support
+- **Angular 20**: Cutting-edge frontend with signals and zoneless change detection
+- **Material Design 3**: Modern UI/UX standards
+- **Spring AI 1.1.0-M2**: Latest RAG and vector store capabilities
+
+### Development Commands
+```bash
+# Backend Development
+./mvnw spring-boot:run
+
+# Frontend Development (in src/main/frontend/)
+npm start  # Development server on :4200
+
+# Full Build
+./mvnw clean package
+
+# Frontend Tests
+cd src/main/frontend && npm test
+```
+
+## Success Metrics (Future Implementation)
+
+1. **Chat Functionality**: ✅ Basic chat working
+2. **UI/UX Quality**: ✅ Material Design implementation
+3. **Build Process**: ✅ Integrated Maven + npm build
+4. **Code Quality**: ✅ Modern language constructs (Java 21, Angular 20)
+5. **Architecture**: ✅ Monorepo structure with clear separation
+
+## Current Status Summary
+
+### ✅ What's Working
+- **Full-stack development environment** with integrated build process
+- **Modern Angular 20 chat interface** with Material Design
+- **Basic Spring AI integration** with ChatClient and vector store support
+- **Proper project structure** following best practices
+- **All dependencies configured** for document processing and vector storage
+
+### 🚧 In Development
+- Database initialization and JPA repositories
+- Vector store integration with actual document data
+- Document upload and processing pipeline
+
+### 📋 Ready for Implementation
+- Apache Tika and PDFBox for document processing
+- PostgreSQL + PgVector for vector storage
 - Cloud Foundry deployment configuration
-- CI/CD pipeline setup
-- Production monitoring configuration
-- Documentation and training
+- Italian legislation-specific prompts and workflows
 
-## Key Considerations
+## Next Development Priorities
 
-### Performance Optimization
-- Implement connection pooling for database
-- Use async processing for document ingestion
-- Cache frequently accessed legislation
-- Optimize chunk size for retrieval accuracy
+1. **Complete Database Setup**: Implement repositories and database initialization
+2. **Document Processing**: Create upload endpoints and text extraction services
+3. **Vector Integration**: Connect processed documents to chat functionality
+4. **Admin Interface**: Build document management UI components
 
-### Security
-- Implement authentication/authorization
-- Encrypt sensitive data at rest
-- Use secure communication (HTTPS)
-- Implement rate limiting for API endpoints
-
-### Scalability
-- Design for horizontal scaling on Cloud Foundry
-- Use message queues for document processing
-- Implement database read replicas if needed
-- Consider CDN for static content
-
-### Monitoring & Observability
-- Application metrics with Micrometer
-- Distributed tracing with Spring Cloud Sleuth
-- Log aggregation with ELK stack
-- Custom dashboards for RAG performance
-
-## Success Metrics
-
-1. **Query Accuracy**: >85% relevant results in top 5 retrievals
-2. **Response Time**: <2 seconds for typical queries
-3. **System Availability**: 99.5% uptime
-4. **User Satisfaction**: >4.0/5.0 rating
-5. **Document Coverage**: Support for 95% of legislation formats
-
-## Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Large document volumes affecting performance | High | Implement efficient chunking and indexing strategies |
-| Complex legal language affecting accuracy | Medium | Fine-tune embeddings and prompts for legal domain |
-| Date filtering complexity | Medium | Comprehensive testing with historical scenarios |
-| Cloud Foundry resource limits | Low | Monitor and scale instances as needed |
-
-## Future Enhancements
-
-1. **Multi-language Support**: Add support for EU legislation in multiple languages
-2. **Advanced Analytics**: Track most queried topics and user patterns
-3. **Document Relationships**: Link related legislation and amendments
-4. **Export Functionality**: Generate reports and summaries
-5. **Voice Interface**: Add speech-to-text capabilities
-6. **Mobile Application**: Native iOS/Android apps
-
-## Conclusion
-
-This implementation plan provides a comprehensive roadmap for building a sophisticated legislation query system using modern RAG patterns with Spring AI. The combination of vector search, temporal filtering, and conversational AI will enable IPZS to provide intelligent access to Italian legislation while maintaining historical accuracy through date context awareness.
+This project successfully demonstrates modern full-stack development practices with cutting-edge AI integration, providing a solid foundation for the IPZS legislation assistant system.

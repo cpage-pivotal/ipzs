@@ -1,13 +1,13 @@
-package org.tanzu.materialstarter;
+package org.tanzu.ipzs;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MaterialStarterApplication {
+public class LegislationAssistantApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MaterialStarterApplication.class, args);
+        SpringApplication.run(LegislationAssistantApplication.class, args);
     }
 
 }
