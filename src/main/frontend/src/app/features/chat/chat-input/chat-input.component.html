@@ -1,0 +1,20 @@
+<div class="chat-input-container">
+  <mat-form-field appearance="outline" class="message-input">
+    <mat-label>{{ translationService.t('chat.input.label') }}</mat-label>
+    <input
+      matInput
+      [(ngModel)]="messageText"
+      (keyup.enter)="onSendMessage()"
+      [disabled]="disabled()"
+      [placeholder]="translationService.t('chat.input.placeholder')">
+  </mat-form-field>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSendMessage()"
+    [disabled]="disabled() || !messageText.trim()"
+    class="send-button">
+    <mat-icon>send</mat-icon>
+    {{ translationService.t('chat.input.send') }}
+  </button>
+</div>

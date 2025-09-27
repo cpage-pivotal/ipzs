@@ -1,0 +1,14 @@
+.date-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-info {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+mat-form-field {
+  width: 200px;
+}

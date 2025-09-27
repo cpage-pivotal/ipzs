@@ -1,0 +1,27 @@
+<div class="messages-container">
+  @for (message of messages(); track $index) {
+    <div class="message-wrapper" [ngClass]="'message-' + message.type">
+      <mat-card class="message-card" [ngClass]="message.type">
+        <mat-card-content>
+          <div class="message-content">{{ message.content }}</div>
+          @if (message.timestamp) {
+            <div class="message-timestamp">
+              {{ message.timestamp | date:'short':'it-IT' }}
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+
+  @if (messages().length === 0) {
+    <div class="welcome-message">
+      <mat-card>
+        <mat-card-content>
+          <h3>{{ translationService.t('chat.welcome.title') }}</h3>
+          <p>{{ translationService.t('chat.welcome.message') }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

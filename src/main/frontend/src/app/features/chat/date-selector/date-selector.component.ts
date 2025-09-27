@@ -8,40 +8,8 @@ import { TranslationService } from '../../../services/translation.service';
   selector: 'app-date-selector',
   standalone: true,
   imports: [CommonModule, FormsModule, MaterialModule],
-  template: `
-    <div class="date-selector">
-      <mat-form-field appearance="outline">
-        <mat-label>{{ translationService.t('chat.dateLabel') }}</mat-label>
-        <input
-          matInput
-          [matDatepicker]="picker"
-          [(ngModel)]="selectedDate"
-          (ngModelChange)="onDateChange($event)"
-          readonly>
-        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
-      <div class="date-info">
-        <small>{{ translationService.t('chat.dateInfo') }}</small>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .date-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .date-info {
-      color: #666;
-      font-size: 0.75rem;
-    }
-
-    mat-form-field {
-      width: 200px;
-    }
-  `]
+  templateUrl: './date-selector.component.html',
+  styleUrls: ['./date-selector.component.scss']
 })
 export class DateSelectorComponent {
   currentDate = input.required<Date>();

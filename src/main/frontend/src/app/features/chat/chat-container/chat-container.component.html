@@ -1,0 +1,39 @@
+<div class="chat-container">
+  <mat-card class="chat-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div class="title-section">
+          <mat-card-title>{{ translationService.t('chat.title') }}</mat-card-title>
+          <mat-card-subtitle>{{ translationService.t('chat.subtitle') }}</mat-card-subtitle>
+        </div>
+        <app-date-selector
+          [currentDate]="chatService.dateContext()"
+          (dateChange)="onDateChange($event)">
+        </app-date-selector>
+      </div>
+    </mat-card-header>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-content class="chat-content">
+      <app-chat-messages
+        [messages]="chatService.messages()">
+      </app-chat-messages>
+    </mat-card-content>
+
+    <mat-divider></mat-divider>
+
+    <mat-card-actions class="chat-actions">
+      <app-chat-input
+        (sendMessage)="onSendMessage($event)"
+        [disabled]="isLoading()">
+      </app-chat-input>
+    </mat-card-actions>
+
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+  </mat-card>
+</div>
