@@ -2,6 +2,7 @@ import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material.module';
+import { TranslationService } from '../../../services/translation.service';
 
 @Component({
   selector: 'app-chat-input',
@@ -10,13 +11,13 @@ import { MaterialModule } from '../../../shared/material/material.module';
   template: `
     <div class="chat-input-container">
       <mat-form-field appearance="outline" class="message-input">
-        <mat-label>Scrivi la tua domanda...</mat-label>
+        <mat-label>{{ translationService.t('chat.input.label') }}</mat-label>
         <input
           matInput
           [(ngModel)]="messageText"
           (keyup.enter)="onSendMessage()"
           [disabled]="disabled()"
-          placeholder="Es: Quali sono le regole per l'importazione di merci dall'UE?">
+          [placeholder]="translationService.t('chat.input.placeholder')">
       </mat-form-field>
       <button
         mat-raised-button
@@ -25,7 +26,7 @@ import { MaterialModule } from '../../../shared/material/material.module';
         [disabled]="disabled() || !messageText.trim()"
         class="send-button">
         <mat-icon>send</mat-icon>
-        Invia
+        {{ translationService.t('chat.input.send') }}
       </button>
     </div>
   `,
@@ -51,6 +52,8 @@ export class ChatInputComponent {
   disabled = input<boolean>(false);
 
   sendMessage = output<string>();
+
+  constructor(public translationService: TranslationService) {}
 
   onSendMessage(): void {
     if (this.messageText.trim()) {

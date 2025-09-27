@@ -57,7 +57,12 @@ export class TranslationService {
     'chat.dateLabel': { en: 'Reference Date', it: 'Data di riferimento' },
     'chat.dateInfo': { en: 'Responses will be based on legislation valid on this date', it: 'Le risposte saranno basate sulla legislazione valida a questa data' },
     'chat.welcome.title': { en: 'Welcome to the IPZS Legislative Assistant', it: 'Benvenuto nell\'Assistente Legislativo IPZS' },
-    'chat.welcome.message': { en: 'You can ask me questions about Italian legislation. Select a reference date and start chatting!', it: 'Puoi farmi domande sulla legislazione italiana. Seleziona una data di riferimento e inizia a chattare!' }
+    'chat.welcome.message': { en: 'You can ask me questions about Italian legislation. Select a reference date and start chatting!', it: 'Puoi farmi domande sulla legislazione italiana. Seleziona una data di riferimento e inizia a chattare!' },
+
+    // Chat Input
+    'chat.input.label': { en: 'Write your question...', it: 'Scrivi la tua domanda...' },
+    'chat.input.placeholder': { en: 'E.g.: What are the rules for importing goods from the EU?', it: 'Es: Quali sono le regole per l\'importazione di merci dall\'UE?' },
+    'chat.input.send': { en: 'Send', it: 'Invia' }
   };
 
   constructor() {
