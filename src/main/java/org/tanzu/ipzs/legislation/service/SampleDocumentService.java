@@ -1,9 +1,9 @@
 package org.tanzu.ipzs.legislation.service;
 
 import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +12,6 @@ import org.tanzu.ipzs.legislation.repository.LegislationDocumentRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 @Service
@@ -46,13 +45,12 @@ public class SampleDocumentService {
     ) {}
 
     @Transactional
-    public CompletableFuture<List<IngestionResult>> generateAndIngestSampleDocuments() {
-        return CompletableFuture.supplyAsync(() -> {
-            var templates = createDocumentTemplates();
-            return templates.stream()
-                    .map(this::processDocumentTemplate)
-                    .toList();
-        });
+    public List<IngestionResult> generateAndIngestSampleDocuments() {
+        // No CompletableFuture.supplyAsync() - runs on current thread
+        var templates = createDocumentTemplates();
+        return templates.stream()
+                .map(this::processDocumentTemplate)
+                .toList();
     }
 
     private IngestionResult processDocumentTemplate(DocumentTemplate template) {

@@ -21,45 +21,42 @@ public class SampleDataController {
      * Generate and ingest sample legislative documents into the vector store
      */
     @PostMapping("/generate-sample-data")
-    public CompletableFuture<ResponseEntity<GenerationResponse>> generateSampleData() {
-        return sampleDocumentService.generateAndIngestSampleDocuments()
-                .thenApply(results -> {
-                    var successCount = results.stream()
-                            .mapToInt(result -> result.success() ? 1 : 0)
-                            .sum();
+    public ResponseEntity<GenerationResponse> generateSampleData() {
+        try {
+            // Now it's synchronous - no CompletableFuture
+            var results = sampleDocumentService.generateAndIngestSampleDocuments();
 
-                    var failureCount = results.size() - successCount;
+            var successCount = results.stream()
+                    .mapToInt(result -> result.success() ? 1 : 0)
+                    .sum();
 
-                    var totalChunks = results.stream()
-                            .mapToInt(IngestionResult::chunksCreated)
-                            .sum();
+            var failureCount = results.size() - successCount;
 
-                    var response = new GenerationResponse(
-                            results.size(),
-                            successCount,
-                            failureCount,
-                            totalChunks,
-                            results
-                    );
+            var totalChunks = results.stream()
+                    .mapToInt(IngestionResult::chunksCreated)
+                    .sum();
 
-                    return ResponseEntity.ok(response);
-                })
-                .exceptionally(throwable -> {
-                    var errorResponse = new GenerationResponse(
-                            0, 0, 1, 0,
-                            List.of(new IngestionResult("ERROR", 0, false, throwable.getMessage()))
-                    );
-                    return ResponseEntity.internalServerError().body(errorResponse);
-                });
+            var response = new GenerationResponse(
+                    results.size(),
+                    successCount,
+                    failureCount,
+                    totalChunks,
+                    results
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            var errorResponse = new GenerationResponse(
+                    0, 0, 1, 0,
+                    List.of(new IngestionResult("ERROR", 0, false, e.getMessage()))
+            );
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
     }
 
-    /**
-     * Check the status of sample data generation
-     */
     @GetMapping("/sample-data-status")
     public ResponseEntity<StatusResponse> getSampleDataStatus() {
-        // This could be enhanced to track actual generation status
-        // For now, just return a simple status
         return ResponseEntity.ok(new StatusResponse(
                 "ready",
                 "Sample data generation service is ready"
