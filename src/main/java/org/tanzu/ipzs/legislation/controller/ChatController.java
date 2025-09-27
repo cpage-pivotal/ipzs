@@ -23,6 +23,11 @@ public class ChatController {
     public ChatResponseDto chat(@RequestBody ChatRequestDto request) {
         String response = chatClient
                 .prompt(request.message())
+                .advisors(spec -> {
+                    if (request.dateContext() != null) {
+                        spec.param("dateContext", request.dateContext());
+                    }
+                })
                 .call()
                 .content();
 
