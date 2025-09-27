@@ -4,10 +4,10 @@
         <mat-card-header>
           <mat-card-title>
             <mat-icon>description</mat-icon>
-            Legislative Document Management
+            {{ translationService.t('documents.title') }}
           </mat-card-title>
           <mat-card-subtitle>
-            Sample Data Generation & Vector Store Management
+            {{ translationService.t('documents.subtitle') }}
           </mat-card-subtitle>
         </mat-card-header>
 
@@ -20,11 +20,11 @@
               [disabled]="loading()">
               @if (loading()) {
                 <mat-spinner diameter="20"></mat-spinner>
-                Generating...
+                {{ translationService.t('documents.generating') }}
               } @else {
                 <ng-container>
                   <mat-icon>add</mat-icon>
-                  Generate Sample Documents
+                  {{ translationService.t('documents.generate') }}
                 </ng-container>
               }
             </button>
@@ -35,7 +35,7 @@
               (click)="refreshDocuments()"
               [disabled]="loading()">
               <mat-icon>refresh</mat-icon>
-              Refresh List
+              {{ translationService.t('documents.refresh') }}
             </button>
           </div>
         </mat-card-content>
@@ -49,7 +49,7 @@
               <mat-icon color="primary">description</mat-icon>
               <div class="stat-numbers">
                 <div class="stat-value">{{ totalDocuments() }}</div>
-                <div class="stat-label">Total Documents</div>
+                <div class="stat-label">{{ translationService.t('stats.total') }}</div>
               </div>
             </div>
           </mat-card-content>
@@ -61,7 +61,7 @@
               <mat-icon color="accent">update</mat-icon>
               <div class="stat-numbers">
                 <div class="stat-value">{{ currentDocuments() }}</div>
-                <div class="stat-label">Currently Effective</div>
+                <div class="stat-label">{{ translationService.t('stats.current') }}</div>
               </div>
             </div>
           </mat-card-content>
@@ -73,7 +73,7 @@
               <mat-icon color="warn">history</mat-icon>
               <div class="stat-numbers">
                 <div class="stat-value">{{ supersededDocuments() }}</div>
-                <div class="stat-label">Superseded Documents</div>
+                <div class="stat-label">{{ translationService.t('stats.superseded') }}</div>
               </div>
             </div>
           </mat-card-content>
@@ -85,23 +85,23 @@
         <mat-card-content>
           <div class="search-section">
             <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Search documents</mat-label>
+              <mat-label>{{ translationService.t('documents.search') }}</mat-label>
               <input
                 matInput
                 [(ngModel)]="searchQuery"
                 (input)="onSearchChange()"
-                placeholder="Enter search terms...">
+                [placeholder]="translationService.t('documents.search.placeholder')">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="date-field">
-              <mat-label>Context Date</mat-label>
+              <mat-label>{{ translationService.t('documents.contextDate') }}</mat-label>
               <input
                 matInput
                 [matDatepicker]="picker"
                 [(ngModel)]="contextDate"
                 (dateChange)="onDateChange()"
-                placeholder="Select context date">
+                [placeholder]="translationService.t('documents.contextDate.placeholder')">
               <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
             </mat-form-field>
@@ -113,7 +113,7 @@
       <mat-card class="documents-card">
         <mat-card-header>
           <mat-card-title>
-            Documents
+            {{ translationService.t('nav.documents') }}
             @if (filteredDocuments().length !== totalDocuments()) {
               <span class="filter-count">({{ filteredDocuments().length }} of {{ totalDocuments() }})</span>
             }
@@ -124,13 +124,13 @@
           @if (loading()) {
             <div class="loading-container">
               <mat-spinner></mat-spinner>
-              <p>Loading documents...</p>
+              <p>{{ translationService.t('documents.loading') }}</p>
             </div>
           } @else if (filteredDocuments().length === 0) {
             <div class="empty-state">
               <mat-icon>description</mat-icon>
-              <h3>No documents found</h3>
-              <p>Try adjusting your search criteria or generate sample documents.</p>
+              <h3>{{ translationService.t('documents.noResults') }}</h3>
+              <p>{{ translationService.t('documents.noResults.subtitle') }}</p>
             </div>
           } @else {
             <mat-accordion multi="true">
@@ -151,7 +151,7 @@
                       <div class="document-meta">
                         <span class="document-type">{{ doc.documentType }}</span>
                         <span class="document-date">
-                          Effective: {{ doc.effectiveDate | date:'shortDate' }}
+                          {{ translationService.t('document.effective.short') }}: {{ doc.effectiveDate | date:'shortDate' }}
                         </span>
                       </div>
                     </mat-panel-description>
@@ -160,30 +160,30 @@
                   <div class="document-details">
                     <div class="document-info">
                       <div class="info-row">
-                        <strong>Document ID:</strong> {{ doc.documentId }}
+                        <strong>{{ translationService.t('document.id') }}:</strong> {{ doc.documentId }}
                       </div>
                       <div class="info-row">
-                        <strong>Document Number:</strong> {{ doc.documentNumber }}
+                        <strong>{{ translationService.t('document.number') }}:</strong> {{ doc.documentNumber }}
                       </div>
                       <div class="info-row">
-                        <strong>Issuing Authority:</strong> {{ doc.issuingAuthority }}
+                        <strong>{{ translationService.t('document.authority') }}:</strong> {{ doc.issuingAuthority }}
                       </div>
                       <div class="info-row">
-                        <strong>Publication Date:</strong> {{ doc.publicationDate | date:'longDate' }}
+                        <strong>{{ translationService.t('document.publication') }}:</strong> {{ doc.publicationDate | date:'longDate' }}
                       </div>
                       <div class="info-row">
-                        <strong>Effective Date:</strong> {{ doc.effectiveDate | date:'longDate' }}
+                        <strong>{{ translationService.t('document.effective') }}:</strong> {{ doc.effectiveDate | date:'longDate' }}
                       </div>
                       @if (doc.expirationDate) {
                         <div class="info-row">
-                          <strong>Expiration Date:</strong> {{ doc.expirationDate | date:'longDate' }}
+                          <strong>{{ translationService.t('document.expiration') }}:</strong> {{ doc.expirationDate | date:'longDate' }}
                         </div>
                       }
                     </div>
 
                     @if (doc.keyProvisions.length > 0) {
                       <div class="provisions-section">
-                        <h4>Key Provisions</h4>
+                        <h4>{{ translationService.t('document.provisions') }}</h4>
                         <mat-chip-set>
                           @for (provision of doc.keyProvisions; track provision) {
                             <mat-chip>{{ provision }}</mat-chip>
@@ -194,7 +194,7 @@
 
                     @if (doc.supersedes && doc.supersedes.length > 0) {
                       <div class="relationship-section">
-                        <h4>Supersedes</h4>
+                        <h4>{{ translationService.t('document.supersedes') }}</h4>
                         <mat-chip-set>
                           @for (superseded of doc.supersedes; track superseded) {
                             <mat-chip color="warn">{{ superseded }}</mat-chip>
@@ -205,7 +205,7 @@
 
                     @if (doc.supersededBy) {
                       <div class="relationship-section">
-                        <h4>Superseded By</h4>
+                        <h4>{{ translationService.t('document.supersededBy') }}</h4>
                         <mat-chip color="accent">{{ doc.supersededBy }}</mat-chip>
                       </div>
                     }

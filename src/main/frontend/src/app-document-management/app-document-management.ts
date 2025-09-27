@@ -14,6 +14,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslationService } from '../app/services/translation.service';
 
 // Modern TypeScript interfaces using string literal types
 export interface DocumentMetadata {
@@ -68,6 +69,7 @@ export interface DocumentService {
 })
 export class DocumentManagementComponent {
   private snackBar = inject(MatSnackBar);
+  public translationService = inject(TranslationService);
 
   // Reactive signals for state management
   documents = signal<DocumentMetadata[]>([]);

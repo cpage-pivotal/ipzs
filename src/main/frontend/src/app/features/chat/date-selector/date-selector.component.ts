@@ -2,6 +2,7 @@ import { Component, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material.module';
+import { TranslationService } from '../../../services/translation.service';
 
 @Component({
   selector: 'app-date-selector',
@@ -10,7 +11,7 @@ import { MaterialModule } from '../../../shared/material/material.module';
   template: `
     <div class="date-selector">
       <mat-form-field appearance="outline">
-        <mat-label>Data di riferimento</mat-label>
+        <mat-label>{{ translationService.t('chat.dateLabel') }}</mat-label>
         <input
           matInput
           [matDatepicker]="picker"
@@ -21,7 +22,7 @@ import { MaterialModule } from '../../../shared/material/material.module';
         <mat-datepicker #picker></mat-datepicker>
       </mat-form-field>
       <div class="date-info">
-        <small>Le risposte saranno basate sulla legislazione valida a questa data</small>
+        <small>{{ translationService.t('chat.dateInfo') }}</small>
       </div>
     </div>
   `,
@@ -48,7 +49,7 @@ export class DateSelectorComponent {
 
   selectedDate = signal<Date>(new Date());
 
-  constructor() {
+  constructor(public translationService: TranslationService) {
     effect(() => {
       this.selectedDate.set(this.currentDate());
     });

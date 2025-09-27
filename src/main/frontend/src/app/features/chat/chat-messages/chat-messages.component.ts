@@ -2,6 +2,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material/material.module';
 import { ChatMessage } from '../../../core/models/chat-message.model';
+import { TranslationService } from '../../../services/translation.service';
 
 @Component({
   selector: 'app-chat-messages',
@@ -28,8 +29,8 @@ import { ChatMessage } from '../../../core/models/chat-message.model';
         <div class="welcome-message">
           <mat-card>
             <mat-card-content>
-              <h3>Benvenuto nell'Assistente Legislativo IPZS</h3>
-              <p>Puoi farmi domande sulla legislazione italiana. Seleziona una data di riferimento e inizia a chattare!</p>
+              <h3>{{ translationService.t('chat.welcome.title') }}</h3>
+              <p>{{ translationService.t('chat.welcome.message') }}</p>
             </mat-card-content>
           </mat-card>
         </div>
@@ -98,4 +99,6 @@ import { ChatMessage } from '../../../core/models/chat-message.model';
 })
 export class ChatMessagesComponent {
   messages = input.required<ChatMessage[]>();
+
+  constructor(public translationService: TranslationService) {}
 }

@@ -5,6 +5,7 @@ import { ChatService } from '../../../core/services/chat.service';
 import { ChatInputComponent } from '../chat-input/chat-input.component';
 import { ChatMessagesComponent } from '../chat-messages/chat-messages.component';
 import { DateSelectorComponent } from '../date-selector/date-selector.component';
+import { TranslationService } from '../../../services/translation.service';
 
 @Component({
   selector: 'app-chat-container',
@@ -22,8 +23,8 @@ import { DateSelectorComponent } from '../date-selector/date-selector.component'
         <mat-card-header>
           <div class="header-content">
             <div class="title-section">
-              <mat-card-title>Assistente Legislativo IPZS</mat-card-title>
-              <mat-card-subtitle>Sistema di consultazione legislativa intelligente</mat-card-subtitle>
+              <mat-card-title>{{ translationService.t('chat.title') }}</mat-card-title>
+              <mat-card-subtitle>{{ translationService.t('chat.subtitle') }}</mat-card-subtitle>
             </div>
             <app-date-selector
               [currentDate]="chatService.dateContext()"
@@ -111,7 +112,10 @@ import { DateSelectorComponent } from '../date-selector/date-selector.component'
 export class ChatContainerComponent {
   isLoading = signal(false);
 
-  constructor(public chatService: ChatService) {}
+  constructor(
+    public chatService: ChatService,
+    public translationService: TranslationService
+  ) {}
 
   onSendMessage(message: string): void {
     this.isLoading.set(true);
