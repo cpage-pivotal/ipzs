@@ -1,2 +1,18 @@
 
-<router-outlet />
+<mat-toolbar color="primary">
+  <span>Assistente Legislativo IPZS</span>
+  <span class="spacer"></span>
+  <nav>
+    <a mat-button routerLink="/chat" routerLinkActive="active">
+      <mat-icon>chat</mat-icon>
+      Chat
+    </a>
+    <a mat-button routerLink="/documents" routerLinkActive="active">
+      <mat-icon>description</mat-icon>
+      Documenti
+    </a>
+  </nav>
+</mat-toolbar>
+<main>
+  <router-outlet></router-outlet>
+</main>
