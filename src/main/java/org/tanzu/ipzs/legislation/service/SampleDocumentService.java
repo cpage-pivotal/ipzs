@@ -12,7 +12,6 @@ import org.tanzu.ipzs.legislation.repository.LegislationDocumentRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -122,34 +121,34 @@ public class SampleDocumentService {
                     var splitDoc = splitDocuments.get(i);
 
                     // Rich metadata for effective semantic search and filtering
-                    var metadata = Map.<String, Object>of(
-                            // Document identification
-                            "document_id", documentId,
-                            "title", template.title(),
-                            "document_number", template.documentNumber(),
+                    var metadata = new java.util.HashMap<String, Object>();
 
-                            // Classification and authority
-                            "document_type", template.documentType(),
-                            "issuing_authority", template.issuingAuthority(),
+                    // Document identification
+                    metadata.put("document_id", documentId);
+                    metadata.put("title", template.title());
+                    metadata.put("document_number", template.documentNumber());
 
-                            // Temporal context (critical for date-aware queries)
-                            "effective_date", template.effectiveDate().toString(),
-                            "publication_date", template.publicationDate().toString(),
-                            "effective_year", template.effectiveDate().getYear(),
-                            "effective_month", template.effectiveDate().getMonthValue(),
+                    // Classification and authority
+                    metadata.put("document_type", template.documentType());
+                    metadata.put("issuing_authority", template.issuingAuthority());
 
-                            // Chunking information
-                            "chunk_index", i,
-                            "total_chunks", splitDocuments.size(),
+                    // Temporal context (critical for date-aware queries)
+                    metadata.put("effective_date", template.effectiveDate().toString());
+                    metadata.put("publication_date", template.publicationDate().toString());
+                    metadata.put("effective_year", template.effectiveDate().getYear());
+                    metadata.put("effective_month", template.effectiveDate().getMonthValue());
 
-                            // Semantic content for enhanced search
-                            "key_provisions", String.join(", ", template.keyProvisions()),
-                            "subject_area", inferSubjectArea(template.title()),
+                    // Chunking information
+                    metadata.put("chunk_index", i);
+                    metadata.put("total_chunks", splitDocuments.size());
 
-                            // For supersession relationships
-                            "is_current", isCurrentDocument(template.effectiveDate()),
-                            "generation", template.effectiveDate().getYear() >= 2025 ? "second" : "first"
-                    );
+                    // Semantic content for enhanced search
+                    metadata.put("key_provisions", String.join(", ", template.keyProvisions()));
+                    metadata.put("subject_area", inferSubjectArea(template.title()));
+
+                    // For supersession relationships
+                    metadata.put("is_current", isCurrentDocument(template.effectiveDate()));
+                    metadata.put("generation", template.effectiveDate().getYear() >= 2025 ? "second" : "first");
 
                     return new Document(splitDoc.getText(), metadata);
                 })
