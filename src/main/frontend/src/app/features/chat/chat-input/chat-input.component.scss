@@ -1,14 +1,18 @@
 .chat-input-container {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+  align-items: flex-start;
   padding: 16px;
+  width: 100%;
 }
 
 .message-input {
   flex: 1;
+  min-width: 300px;
 }
 
 .send-button {
   white-space: nowrap;
+  height: 40px;
+  margin-top: 8px;
 }

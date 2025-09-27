@@ -12,4 +12,6 @@ nav a.active {
 
 main {
   padding: 16px;
+  height: calc(100vh - 64px);
+  overflow: hidden;
 }
