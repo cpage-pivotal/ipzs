@@ -5,15 +5,18 @@
   display: flex;
   padding: var(--mat-spacing-3);
   background-color: var(--mat-sys-surface-variant);
+  box-sizing: border-box;
 }
 
 .chat-card {
   flex: 1;
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
   @include mat.elevation(2);
 }
 
