@@ -1,8 +1,10 @@
+@use '@angular/material' as mat;
+
 .chat-container {
   height: 100%;
   display: flex;
-  padding: 20px;
-  background-color: #f5f5f5;
+  padding: var(--mat-spacing-3);
+  background-color: var(--mat-sys-surface-variant);
 }
 
 .chat-card {
@@ -12,6 +14,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  @include mat.elevation(2);
 }
 
 .header-content {
@@ -40,7 +43,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--mat-sys-surface-container);
   display: flex;
   justify-content: center;
   align-items: center;

@@ -1,8 +1,8 @@
 .chat-input-container {
   display: flex;
-  gap: 12px;
+  gap: var(--mat-spacing-2);
   align-items: flex-start;
-  padding: 16px;
+  padding: var(--mat-spacing-2);
   width: 100%;
 }
 
@@ -14,5 +14,10 @@
 .send-button {
   white-space: nowrap;
   height: 40px;
-  margin-top: 8px;
+  margin-top: var(--mat-spacing-1);
+  transition: all 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 }

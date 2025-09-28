@@ -3,7 +3,7 @@
 }
 
 nav a {
-  margin-left: 8px;
+  margin-left: var(--mat-spacing-1);
 }
 
 nav a.active {
@@ -11,7 +11,7 @@ nav a.active {
 }
 
 main {
-  padding: 16px;
+  padding: var(--mat-spacing-2);
   height: calc(100vh - 64px);
   overflow: hidden;
 }

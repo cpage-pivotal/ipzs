@@ -1,7 +1,7 @@
-<div class="messages-container">
+<div class="messages-container" role="log" aria-label="Chat messages" aria-live="polite">
   @for (message of messages(); track $index) {
     <div class="message-wrapper" [ngClass]="'message-' + message.type">
-      <mat-card class="message-card" [ngClass]="message.type">
+      <mat-card class="message-card" [ngClass]="message.type" [attr.aria-label]="message.type + ' message'" role="article">
         <mat-card-content>
           <div class="message-content">{{ message.content }}</div>
           @if (message.timestamp) {

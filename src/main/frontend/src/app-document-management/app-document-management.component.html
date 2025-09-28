@@ -17,7 +17,9 @@
               mat-raised-button
               color="primary"
               (click)="generateSampleData()"
-              [disabled]="loading()">
+              [disabled]="loading()"
+              [attr.aria-label]="translationService.t('documents.generate') + ' sample data'"
+              type="button">
               @if (loading()) {
                 <mat-spinner diameter="20"></mat-spinner>
                 {{ translationService.t('documents.generating') }}

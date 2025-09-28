@@ -6,14 +6,20 @@
       [(ngModel)]="messageText"
       (keyup.enter)="onSendMessage()"
       [disabled]="disabled()"
-      [placeholder]="translationService.t('chat.input.placeholder')">
+      [placeholder]="translationService.t('chat.input.placeholder')"
+      [attr.aria-label]="translationService.t('chat.input.label')"
+      role="textbox"
+      aria-describedby="send-button">
   </mat-form-field>
   <button
     mat-raised-button
     color="primary"
     (click)="onSendMessage()"
     [disabled]="disabled() || !messageText.trim()"
-    class="send-button">
+    class="send-button"
+    id="send-button"
+    [attr.aria-label]="translationService.t('chat.input.send') + ' message'"
+    type="button">
     <mat-icon>send</mat-icon>
     {{ translationService.t('chat.input.send') }}
   </button>

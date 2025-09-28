@@ -1,12 +1,12 @@
 .date-selector {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--mat-spacing-1);
 }
 
 .date-info {
-  color: #666;
-  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
 }
 
 mat-form-field {
