@@ -132,6 +132,7 @@ public class SampleDocumentService {
 
                     // Temporal context (critical for date-aware queries)
                     metadata.put("effective_date", template.effectiveDate().toString());
+                    metadata.put("effective_date_epoch", template.effectiveDate().toEpochDay());
                     metadata.put("publication_date", template.publicationDate().toString());
                     metadata.put("effective_year", template.effectiveDate().getYear());
                     metadata.put("effective_month", template.effectiveDate().getMonthValue());
