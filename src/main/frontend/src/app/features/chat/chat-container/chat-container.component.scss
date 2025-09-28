@@ -38,6 +38,14 @@
 
 .chat-actions {
   padding: 0 !important;
+  flex-shrink: 0;
+  width: 100%;  // Add this
+
+  // Ensure app-chat-input stretches
+  app-chat-input {
+    display: block;
+    width: 100%;
+  }
 }
 
 .loading-overlay {

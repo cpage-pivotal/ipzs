@@ -46,3 +46,29 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Chat input specific overrides
+app-chat-input {
+  .mat-mdc-form-field {
+    width: 100%;
+    flex: 1;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field-flex {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field-infix {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  input.mat-mdc-input-element {
+    width: 100%;
+  }
+}
