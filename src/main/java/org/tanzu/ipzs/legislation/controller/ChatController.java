@@ -23,24 +23,40 @@ public class ChatController {
 
     @PostMapping
     public ChatResponseDto chat(@RequestBody ChatRequestDto request) {
-        var promptBuilder = chatClient.prompt(request.message());
+        // Debug logging
+        System.out.println("DEBUG: Received chat request with dateContext: " + request.dateContext());
 
+        // Create the base prompt
+        var chatClientBuilder = chatClient.prompt(request.message());
+
+        // If date context is provided, we need to pass it through the context
         if (request.dateContext() != null) {
-            Map<String, Object> advisorContext = new HashMap<>();
-            advisorContext.put("dateContext", request.dateContext());
+            // Use a custom approach to inject date context into the request
+            String response = chatClientBuilder
+                    .advisors(spec -> {
+                        // Pass the date context as advisor parameters
+                        Map<String, Object> contextParams = new HashMap<>();
+                        contextParams.put("dateContext", request.dateContext());
+                        spec.params(contextParams);
+                    })
+                    .call()
+                    .content();
 
-            promptBuilder = promptBuilder.advisors(spec -> {
-                spec.params(advisorContext);
-            });
+            return new ChatResponseDto(
+                    response,
+                    request.sessionId() != null ? request.sessionId() : UUID.randomUUID(),
+                    List.of()
+            );
+        } else {
+            // No date context, use regular processing
+            String response = chatClientBuilder.call().content();
+
+            return new ChatResponseDto(
+                    response,
+                    request.sessionId() != null ? request.sessionId() : UUID.randomUUID(),
+                    List.of()
+            );
         }
-
-        String response = promptBuilder.call().content();
-
-        return new ChatResponseDto(
-                response,
-                request.sessionId() != null ? request.sessionId() : UUID.randomUUID(),
-                List.of()
-        );
     }
 
     @GetMapping("/health")

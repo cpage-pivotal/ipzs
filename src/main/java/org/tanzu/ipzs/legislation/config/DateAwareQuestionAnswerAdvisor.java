@@ -37,10 +37,29 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
     private static final PromptTemplate DEFAULT_PROMPT_TEMPLATE = new PromptTemplate("""
         You are a legislative assistant for the Italian State Printing House (IPZS).
 
-        CRITICAL: Only reference legislation that was effective on or before {date_context}.
-        If legislation has been superseded or expired by this date, mention this explicitly.
+        CRITICAL: Today's date is {date_context}. You must answer based ONLY on legislation that was in effect on {date_context}.
 
-        When multiple versions of legislation exist, always refer to the version that was in effect on the specified date.
+        TEMPORAL LOGIC RULES (READ CAREFULLY):
+        1. A law is APPLICABLE on {date_context} if its effective date is {date_context} or earlier
+        2. A law is NOT APPLICABLE on {date_context} if its effective date is after {date_context}
+        3. If a newer law supersedes an older law, and the newer law is effective by {date_context}, then use ONLY the newer law
+        4. ALWAYS compare dates carefully: September 1, 2025 comes BEFORE September 10, 2025
+
+        EXAMPLE DATE LOGIC:
+        - If effective date is "January 1, 2024" and query date is "September 10, 2025" → APPLICABLE (Jan 1, 2024 is before Sep 10, 2025)
+        - If effective date is "September 1, 2025" and query date is "September 10, 2025" → APPLICABLE (Sep 1, 2025 is before Sep 10, 2025)  
+        - If effective date is "October 1, 2025" and query date is "September 10, 2025" → NOT APPLICABLE (Oct 1, 2025 is after Sep 10, 2025)
+
+        SUPERSESSION LOGIC:
+        - If you see multiple laws on the same topic, check which one was most recently effective by {date_context}
+        - If a law states it "supersedes" another law, and the superseding law is effective by {date_context}, ignore the old law
+        - Always use the most current version that was effective by {date_context}
+
+        RESPONSE FORMAT:
+        - Start with: "As of {date_context}, the current legislation in effect is..."
+        - Reference only the most current applicable law
+        - If legislation changed during the timeframe, explain what was superseded and when
+        - Use present tense for laws that are in effect on {date_context}
 
         {query}
 
@@ -61,6 +80,9 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
     private final Scheduler scheduler;
     private final int order;
 
+    // Store the date context as instance variable set by Spring AI
+    private final ThreadLocal<LocalDate> threadLocalDateContext = new ThreadLocal<>();
+
     // Primary constructor for Spring dependency injection
     @Autowired
     public DateAwareQuestionAnswerAdvisor(VectorStore vectorStore) {
@@ -69,28 +91,6 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
         this.promptTemplate = DEFAULT_PROMPT_TEMPLATE;
         this.scheduler = DEFAULT_SCHEDULER;
         this.order = 0;
-    }
-
-    // Constructor for programmatic configuration
-    public DateAwareQuestionAnswerAdvisor(VectorStore vectorStore, int topK, double threshold) {
-        this.vectorStore = vectorStore;
-        this.defaultSearchRequest = SearchRequest.builder().topK(topK).similarityThreshold(threshold).build();
-        this.promptTemplate = DEFAULT_PROMPT_TEMPLATE;
-        this.scheduler = DEFAULT_SCHEDULER;
-        this.order = 0;
-    }
-
-    // Private constructor for builder pattern
-    private DateAwareQuestionAnswerAdvisor(VectorStore vectorStore,
-                                           SearchRequest searchRequest,
-                                           PromptTemplate promptTemplate,
-                                           Scheduler scheduler,
-                                           int order) {
-        this.vectorStore = vectorStore;
-        this.defaultSearchRequest = searchRequest;
-        this.promptTemplate = promptTemplate;
-        this.scheduler = scheduler;
-        this.order = order;
     }
 
     @Override
@@ -105,10 +105,16 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
 
     @Override
     public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
-        LocalDate dateContext = extractDateContext(chatClientRequest.context());
+        // Try multiple ways to extract the date context
+        LocalDate dateContext = extractDateContext(chatClientRequest);
+
+        // Debug logging
+        System.out.println("DEBUG: Extracted date context: " + dateContext);
+        System.out.println("DEBUG: Request context keys: " + chatClientRequest.context().keySet());
 
         if (dateContext == null) {
             // No date context provided, fall back to regular QA behavior
+            System.out.println("DEBUG: No date context found, using regular QA");
             return performRegularQA(chatClientRequest);
         }
 
@@ -116,13 +122,49 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
         UserMessage userMessage = chatClientRequest.prompt().getUserMessage();
         String userText = userMessage.getText();
 
+        System.out.println("DEBUG: Processing with date context: " + dateContext + " for query: " + userText);
+
         // Search for relevant documents with date filtering
         List<Document> documents = searchWithDateFilter(userText, dateContext);
 
+        System.out.println("DEBUG: Retrieved " + documents.size() + " documents from vector search");
+
         // Filter documents in memory as an additional safeguard
         List<Document> filteredDocuments = documents.stream()
-                .filter(doc -> LegislationDateUtils.isDocumentEffectiveOnDate(doc, dateContext))
+                .filter(doc -> {
+                    boolean isEffective = LegislationDateUtils.isDocumentEffectiveOnDate(doc, dateContext);
+                    String title = (String) doc.getMetadata().get("title");
+                    String effectiveDate = (String) doc.getMetadata().get("effective_date");
+                    System.out.println("DEBUG: Document '" + title + "' (effective: " + effectiveDate + ") - " +
+                            (isEffective ? "INCLUDED" : "EXCLUDED"));
+                    return isEffective;
+                })
+                .sorted((doc1, doc2) -> {
+                    // Sort by effective date descending (most recent first)
+                    String date1 = (String) doc1.getMetadata().get("effective_date");
+                    String date2 = (String) doc2.getMetadata().get("effective_date");
+                    if (date1 != null && date2 != null) {
+                        try {
+                            LocalDate localDate1 = LocalDate.parse(date1);
+                            LocalDate localDate2 = LocalDate.parse(date2);
+                            return localDate2.compareTo(localDate1); // Reverse order (newest first)
+                        } catch (Exception e) {
+                            // If date parsing fails, maintain original order
+                            return 0;
+                        }
+                    }
+                    return 0;
+                })
                 .toList();
+
+        System.out.println("DEBUG: After filtering, " + filteredDocuments.size() + " documents remain");
+
+        // Debug: Show the order of documents after sorting
+        filteredDocuments.forEach(doc -> {
+            String title = (String) doc.getMetadata().get("title");
+            String effectiveDate = (String) doc.getMetadata().get("effective_date");
+            System.out.println("DEBUG: Sorted order - '" + title + "' (effective: " + effectiveDate + ")");
+        });
 
         // Create context for the response metadata
         Map<String, Object> context = new HashMap<>(chatClientRequest.context());
@@ -142,6 +184,8 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
                 "date_context", LegislationDateUtils.formatDateForDisplay(dateContext)
         ));
 
+        System.out.println("DEBUG: Enhanced prompt created with " + filteredDocuments.size() + " documents");
+
         // Return updated request with augmented prompt and context
         return chatClientRequest.mutate()
                 .prompt(chatClientRequest.prompt().augmentUserMessage(augmentedUserText))
@@ -149,43 +193,29 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
                 .build();
     }
 
-    @Override
-    public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
-        // Add retrieved documents to response metadata
-        ChatResponse.Builder chatResponseBuilder;
-        if (chatClientResponse.chatResponse() == null) {
-            chatResponseBuilder = ChatResponse.builder();
-        } else {
-            chatResponseBuilder = ChatResponse.builder().from(chatClientResponse.chatResponse());
-        }
-
-        chatResponseBuilder.metadata(RETRIEVED_DOCUMENTS,
-                chatClientResponse.context().get(RETRIEVED_DOCUMENTS));
-
-        return ChatClientResponse.builder()
-                .chatResponse(chatResponseBuilder.build())
-                .context(chatClientResponse.context())
-                .build();
-    }
-
-    @Override
-    public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest,
-                                                 StreamAdvisorChain streamAdvisorChain) {
-        return Mono.just(chatClientRequest)
-                .publishOn(this.getScheduler())
-                .map(request -> this.before(request, streamAdvisorChain))
-                .flatMapMany(streamAdvisorChain::nextStream)
-                .map(response -> this.after(response, streamAdvisorChain));
-    }
-
-    private LocalDate extractDateContext(Map<String, Object> context) {
-        if (context != null && context.containsKey(DATE_CONTEXT_PARAM)) {
-            Object dateValue = context.get(DATE_CONTEXT_PARAM);
+    private LocalDate extractDateContext(ChatClientRequest chatClientRequest) {
+        // Method 1: Check request context (this is where we expect it)
+        if (chatClientRequest.context().containsKey(DATE_CONTEXT_PARAM)) {
+            Object dateValue = chatClientRequest.context().get(DATE_CONTEXT_PARAM);
             if (dateValue instanceof LocalDate localDate) {
                 return localDate;
             }
+            if (dateValue instanceof String dateString) {
+                try {
+                    return LocalDate.parse(dateString);
+                } catch (Exception e) {
+                    System.err.println("Failed to parse date string: " + dateString);
+                }
+            }
         }
-        return null;
+
+        // Method 2: Check if it's stored in thread local (for parameter passing)
+        return threadLocalDateContext.get();
+    }
+
+    // Method to set date context (can be called by Spring AI parameter injection)
+    public void setDateContext(LocalDate dateContext) {
+        this.threadLocalDateContext.set(dateContext);
     }
 
     private ChatClientRequest performRegularQA(ChatClientRequest chatClientRequest) {
@@ -246,6 +276,7 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
             try {
                 Filter.Expression filter = new FilterExpressionTextParser().parse(filterExpression);
                 searchRequestBuilder.filterExpression(filter);
+                System.out.println("DEBUG: Applied vector store filter: " + filterExpression);
             } catch (Exception e) {
                 // If vector store doesn't support the filter format, we'll rely on in-memory filtering
                 System.err.println("Vector store filter not supported, using in-memory filtering: " + e.getMessage());
@@ -265,67 +296,61 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
 
     private String formatDocumentContent(Document document) {
         StringBuilder formatted = new StringBuilder();
-        formatted.append(document.getText());
 
-        // Add metadata context
+        // Add metadata context FIRST to make it more prominent
         Map<String, Object> metadata = document.getMetadata();
-        if (metadata != null) {
-            String title = (String) metadata.get("title");
-            String effectiveDate = (String) metadata.get("effective_date");
-            String documentType = (String) metadata.get("document_type");
+        String title = (String) metadata.get("title");
+        String effectiveDate = (String) metadata.get("effective_date");
+        String documentType = (String) metadata.get("document_type");
+        String documentNumber = (String) metadata.get("document_number");
 
-            if (title != null) {
-                formatted.append("\nTitle: ").append(title);
-            }
-            if (effectiveDate != null) {
-                formatted.append("\nEffective Date: ").append(effectiveDate);
-            }
-            if (documentType != null) {
-                formatted.append("\nType: ").append(documentType);
-            }
+        formatted.append("=== DOCUMENT METADATA ===\n");
+        if (title != null) {
+            formatted.append("Title: ").append(title).append("\n");
         }
+        if (effectiveDate != null) {
+            formatted.append("Effective Date: ").append(effectiveDate).append("\n");
+        }
+        if (documentType != null) {
+            formatted.append("Type: ").append(documentType).append("\n");
+        }
+        if (documentNumber != null) {
+            formatted.append("Document Number: ").append(documentNumber).append("\n");
+        }
+        formatted.append("=== DOCUMENT CONTENT ===\n");
+
+        formatted.append(document.getText());
+        formatted.append("\n=== END DOCUMENT ===\n");
 
         return formatted.toString();
     }
 
-    // Builder pattern for more flexible construction
-    public static Builder builder(VectorStore vectorStore) {
-        return new Builder(vectorStore);
+    @Override
+    public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
+        // Add retrieved documents to response metadata
+        ChatResponse.Builder chatResponseBuilder;
+        if (chatClientResponse.chatResponse() == null) {
+            chatResponseBuilder = ChatResponse.builder();
+        } else {
+            chatResponseBuilder = ChatResponse.builder().from(chatClientResponse.chatResponse());
+        }
+
+        chatResponseBuilder.metadata(RETRIEVED_DOCUMENTS,
+                chatClientResponse.context().get(RETRIEVED_DOCUMENTS));
+
+        return ChatClientResponse.builder()
+                .chatResponse(chatResponseBuilder.build())
+                .context(chatClientResponse.context())
+                .build();
     }
 
-    public static class Builder {
-        private final VectorStore vectorStore;
-        private SearchRequest searchRequest = SearchRequest.builder().topK(5).similarityThreshold(0.7).build();
-        private PromptTemplate promptTemplate = DEFAULT_PROMPT_TEMPLATE;
-        private Scheduler scheduler = DEFAULT_SCHEDULER;
-        private int order = 0;
-
-        private Builder(VectorStore vectorStore) {
-            this.vectorStore = vectorStore;
-        }
-
-        public Builder searchRequest(SearchRequest searchRequest) {
-            this.searchRequest = searchRequest;
-            return this;
-        }
-
-        public Builder promptTemplate(PromptTemplate promptTemplate) {
-            this.promptTemplate = promptTemplate;
-            return this;
-        }
-
-        public Builder scheduler(Scheduler scheduler) {
-            this.scheduler = scheduler;
-            return this;
-        }
-
-        public Builder order(int order) {
-            this.order = order;
-            return this;
-        }
-
-        public DateAwareQuestionAnswerAdvisor build() {
-            return new DateAwareQuestionAnswerAdvisor(vectorStore, searchRequest, promptTemplate, scheduler, order);
-        }
+    @Override
+    public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest,
+                                                 StreamAdvisorChain streamAdvisorChain) {
+        return Mono.just(chatClientRequest)
+                .publishOn(this.getScheduler())
+                .map(request -> this.before(request, streamAdvisorChain))
+                .flatMapMany(streamAdvisorChain::nextStream)
+                .map(response -> this.after(response, streamAdvisorChain));
     }
 }
