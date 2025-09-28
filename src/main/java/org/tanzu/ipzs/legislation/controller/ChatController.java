@@ -5,7 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import org.tanzu.ipzs.legislation.model.dto.ChatRequestDto;
 import org.tanzu.ipzs.legislation.model.dto.ChatResponseDto;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -21,15 +23,18 @@ public class ChatController {
 
     @PostMapping
     public ChatResponseDto chat(@RequestBody ChatRequestDto request) {
-        String response = chatClient
-                .prompt(request.message())
-                .advisors(spec -> {
-                    if (request.dateContext() != null) {
-                        spec.param("dateContext", request.dateContext());
-                    }
-                })
-                .call()
-                .content();
+        var promptBuilder = chatClient.prompt(request.message());
+
+        if (request.dateContext() != null) {
+            Map<String, Object> advisorContext = new HashMap<>();
+            advisorContext.put("dateContext", request.dateContext());
+
+            promptBuilder = promptBuilder.advisors(spec -> {
+                spec.params(advisorContext);
+            });
+        }
+
+        String response = promptBuilder.call().content();
 
         return new ChatResponseDto(
                 response,
