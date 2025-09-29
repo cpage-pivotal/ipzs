@@ -43,6 +43,7 @@ export class DocumentManagementComponent implements OnDestroy {
   // Reactive signals for state management
   documents = signal<DocumentMetadata[]>([]);
   loading = signal(false);
+  hasLoaded = signal(false);
 
   // Computed signals for derived state
   totalDocuments = computed(() => this.documents().length);
@@ -68,7 +69,7 @@ export class DocumentManagementComponent implements OnDestroy {
   constructor() {
     // Effect to automatically refresh when needed
     effect(() => {
-      if (this.documents().length === 0 && !this.loading()) {
+      if (this.documents().length === 0 && !this.loading() && !this.hasLoaded()) {
         this.refreshDocuments();
       }
     });
@@ -108,6 +109,7 @@ export class DocumentManagementComponent implements OnDestroy {
 
   refreshDocuments(): void {
     this.loading.set(true);
+    this.hasLoaded.set(false);
 
     this.documentService.getAllDocuments()
       .pipe(takeUntil(this.destroy$))
@@ -115,6 +117,7 @@ export class DocumentManagementComponent implements OnDestroy {
         next: (docs: DocumentMetadata[]) => {
           this.documents.set(docs);
           this.loading.set(false);
+          this.hasLoaded.set(true);
         },
         error: (error) => {
           console.error('Error loading documents:', error);
@@ -123,6 +126,7 @@ export class DocumentManagementComponent implements OnDestroy {
             panelClass: 'error-snackbar'
           });
           this.loading.set(false);
+          this.hasLoaded.set(true);
         }
       });
   }

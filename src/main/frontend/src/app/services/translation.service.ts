@@ -61,7 +61,7 @@ export class TranslationService {
 
     // Chat Input
     'chat.input.label': { en: 'Write your question...', it: 'Scrivi la tua domanda...' },
-    'chat.input.placeholder': { en: 'E.g.: What are the rules for importing goods from the EU?', it: 'Es: Quali sono le regole per l\'importazione di merci dall\'UE?' },
+    'chat.input.placeholder': { en: 'E.g.: What consumer protections do I have if an airline delays my baggage?', it: 'Es: Quali tutele per i consumatori ho se una compagnia aerea ritarda il mio bagaglio?' },
     'chat.input.send': { en: 'Send', it: 'Invia' }
   };
 
