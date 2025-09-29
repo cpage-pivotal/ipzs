@@ -82,34 +82,6 @@
         </mat-card>
       </div>
 
-      <!-- Document Search and Filters -->
-      <mat-card class="search-card">
-        <mat-card-content>
-          <div class="search-section">
-            <mat-form-field appearance="outline" class="search-field">
-              <mat-label>{{ translationService.t('documents.search') }}</mat-label>
-              <input
-                matInput
-                [(ngModel)]="searchQuery"
-                (input)="onSearchChange()"
-                [placeholder]="translationService.t('documents.search.placeholder')">
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="date-field">
-              <mat-label>{{ translationService.t('documents.contextDate') }}</mat-label>
-              <input
-                matInput
-                [matDatepicker]="picker"
-                [(ngModel)]="contextDate"
-                (dateChange)="onDateChange()"
-                [placeholder]="translationService.t('documents.contextDate.placeholder')">
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
-          </div>
-        </mat-card-content>
-      </mat-card>
 
       <!-- Document List -->
       <mat-card class="documents-card">

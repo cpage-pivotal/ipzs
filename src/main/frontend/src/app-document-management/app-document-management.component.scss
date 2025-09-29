@@ -58,21 +58,6 @@
       font: var(--mat-sys-body-small);
     }
 
-    .search-section {
-      display: flex;
-      gap: var(--mat-spacing-2);
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .search-field {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .date-field {
-      min-width: 200px;
-    }
 
     .loading-container {
       display: flex;
@@ -169,15 +154,6 @@
         flex-direction: column;
       }
 
-      .search-section {
-        flex-direction: column;
-      }
-
-      .search-field,
-      .date-field {
-        width: 100%;
-        min-width: unset;
-      }
 
       .stats-grid {
         grid-template-columns: 1fr;

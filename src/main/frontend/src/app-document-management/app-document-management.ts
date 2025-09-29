@@ -6,14 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TranslationService } from '../app/services/translation.service';
@@ -26,15 +22,11 @@ import { DocumentMetadata, GenerationResult } from '../app/core/models/document.
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatListModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatDatepickerModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatChipsModule,
     MatExpansionModule,
     DatePipe
@@ -51,8 +43,6 @@ export class DocumentManagementComponent implements OnDestroy {
   // Reactive signals for state management
   documents = signal<DocumentMetadata[]>([]);
   loading = signal(false);
-  searchQuery = signal('');
-  contextDate = signal<Date | null>(null);
 
   // Computed signals for derived state
   totalDocuments = computed(() => this.documents().length);
@@ -70,32 +60,7 @@ export class DocumentManagementComponent implements OnDestroy {
   );
 
   filteredDocuments = computed(() => {
-    let filtered = this.documents();
-
-    // Apply search filter
-    const query = this.searchQuery().toLowerCase();
-    if (query) {
-      filtered = filtered.filter(doc =>
-        doc.title.toLowerCase().includes(query) ||
-        doc.documentType.toLowerCase().includes(query) ||
-        (doc.issuingAuthority?.toLowerCase().includes(query) ?? false) ||
-        (doc.keyProvisions?.some((provision: string) =>
-          provision.toLowerCase().includes(query)
-        ) ?? false)
-      );
-    }
-
-    // Apply date context filter
-    const contextDate = this.contextDate();
-    if (contextDate) {
-      const contextDateStr = contextDate.toISOString().split('T')[0];
-      filtered = filtered.filter(doc =>
-        doc.effectiveDate <= contextDateStr &&
-        (!doc.expirationDate || doc.expirationDate > contextDateStr)
-      );
-    }
-
-    return filtered.sort((a, b) =>
+    return this.documents().sort((a, b) =>
       new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime()
     );
   });
@@ -162,13 +127,6 @@ export class DocumentManagementComponent implements OnDestroy {
       });
   }
 
-  onSearchChange(): void {
-    // The computed signal will automatically update filteredDocuments
-  }
-
-  onDateChange(): void {
-    // The computed signal will automatically update filteredDocuments
-  }
 
   getDocumentStatusColor(doc: DocumentMetadata): string {
     if (doc.supersededBy) return 'warn';
