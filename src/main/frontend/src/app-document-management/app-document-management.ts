@@ -1,5 +1,5 @@
 // document-management.component.ts
-import { Component, computed, effect, signal, inject } from '@angular/core';
+import { Component, computed, effect, signal, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,37 +14,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { TranslationService } from '../app/services/translation.service';
+import { DocumentService } from '../app/core/services/document.service';
+import { DocumentMetadata, GenerationResult } from '../app/core/models/document.model';
 
-// Modern TypeScript interfaces using string literal types
-export interface DocumentMetadata {
-  documentId: string;
-  title: string;
-  documentType: 'Federal Legislation' | 'Federal Regulation' | 'State Law' | 'Local Ordinance';
-  publicationDate: string;
-  effectiveDate: string;
-  expirationDate?: string;
-  issuingAuthority: string;
-  documentNumber: string;
-  keyProvisions: string[];
-  supersedes?: string[];
-  supersededBy?: string;
-}
-
-export interface IngestionResult {
-  documentId: string;
-  chunksCreated: number;
-  success: boolean;
-  message: string;
-}
-
-// Service using modern HTTP client and signals
-export interface DocumentService {
-  generateSampleDocuments(): Promise<IngestionResult[]>;
-  getAllDocuments(): Promise<DocumentMetadata[]>;
-  getDocumentsByDateRange(startDate: string, endDate: string): Promise<DocumentMetadata[]>;
-  searchDocuments(query: string, contextDate?: string): Promise<DocumentMetadata[]>;
-}
 
 @Component({
   selector: 'app-document-management',
@@ -67,9 +42,11 @@ export interface DocumentService {
   templateUrl: './app-document-management.component.html',
   styleUrl: './app-document-management.component.scss'
 })
-export class DocumentManagementComponent {
+export class DocumentManagementComponent implements OnDestroy {
   private snackBar = inject(MatSnackBar);
+  private documentService = inject(DocumentService);
   public translationService = inject(TranslationService);
+  private destroy$ = new Subject<void>();
 
   // Reactive signals for state management
   documents = signal<DocumentMetadata[]>([]);
@@ -101,10 +78,10 @@ export class DocumentManagementComponent {
       filtered = filtered.filter(doc =>
         doc.title.toLowerCase().includes(query) ||
         doc.documentType.toLowerCase().includes(query) ||
-        doc.issuingAuthority.toLowerCase().includes(query) ||
-        doc.keyProvisions.some(provision =>
+        (doc.issuingAuthority?.toLowerCase().includes(query) ?? false) ||
+        (doc.keyProvisions?.some((provision: string) =>
           provision.toLowerCase().includes(query)
-        )
+        ) ?? false)
       );
     }
 
@@ -132,51 +109,57 @@ export class DocumentManagementComponent {
     });
   }
 
-  async generateSampleData(): Promise<void> {
+  generateSampleData(): void {
     this.loading.set(true);
-    try {
-      // This would call the actual DocumentService
-      const results = await this.mockGenerateSampleDocuments();
 
-      const successCount = results.filter(r => r.success).length;
-      const failCount = results.filter(r => !r.success).length;
+    this.documentService.generateSampleData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result: GenerationResult) => {
+          let message = `Generated ${result.successCount} documents successfully`;
+          if (result.failureCount > 0) {
+            message += `, ${result.failureCount} failed`;
+          }
 
-      let message = `Generated ${successCount} documents successfully`;
-      if (failCount > 0) {
-        message += `, ${failCount} failed`;
-      }
+          this.snackBar.open(message, 'Close', {
+            duration: 5000,
+            panelClass: result.successCount > 0 ? 'success-snackbar' : 'error-snackbar'
+          });
 
-      this.snackBar.open(message, 'Close', {
-        duration: 5000,
-        panelClass: successCount > 0 ? 'success-snackbar' : 'error-snackbar'
+          // Refresh the document list
+          this.refreshDocuments();
+        },
+        error: (error) => {
+          console.error('Error generating sample documents:', error);
+          this.snackBar.open('Failed to generate sample documents', 'Close', {
+            duration: 5000,
+            panelClass: 'error-snackbar'
+          });
+          this.loading.set(false);
+        },
+        complete: () => this.loading.set(false)
       });
-
-      // Refresh the document list
-      await this.refreshDocuments();
-    } catch (error) {
-      this.snackBar.open('Failed to generate sample documents', 'Close', {
-        duration: 5000,
-        panelClass: 'error-snackbar'
-      });
-    } finally {
-      this.loading.set(false);
-    }
   }
 
-  async refreshDocuments(): Promise<void> {
+  refreshDocuments(): void {
     this.loading.set(true);
-    try {
-      // This would call the actual DocumentService
-      const docs = await this.mockGetAllDocuments();
-      this.documents.set(docs);
-    } catch (error) {
-      this.snackBar.open('Failed to load documents', 'Close', {
-        duration: 5000,
-        panelClass: 'error-snackbar'
+
+    this.documentService.getAllDocuments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (docs: DocumentMetadata[]) => {
+          this.documents.set(docs);
+          this.loading.set(false);
+        },
+        error: (error) => {
+          console.error('Error loading documents:', error);
+          this.snackBar.open('Failed to load documents', 'Close', {
+            duration: 5000,
+            panelClass: 'error-snackbar'
+          });
+          this.loading.set(false);
+        }
       });
-    } finally {
-      this.loading.set(false);
-    }
   }
 
   onSearchChange(): void {
@@ -209,49 +192,8 @@ export class DocumentManagementComponent {
     return 'schedule';
   }
 
-  // Mock service methods (replace with actual HTTP service calls)
-  private async mockGenerateSampleDocuments(): Promise<IngestionResult[]> {
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
-    return [
-      { documentId: 'hr-2024-001', chunksCreated: 12, success: true, message: 'Success' },
-      { documentId: 'hr-2025-042', chunksCreated: 15, success: true, message: 'Success' },
-      { documentId: 'dea-2024-001', chunksCreated: 18, success: true, message: 'Success' },
-      { documentId: 'hr-2025-089', chunksCreated: 22, success: true, message: 'Success' },
-      { documentId: 'dhs-2024-003', chunksCreated: 14, success: true, message: 'Success' },
-      { documentId: 'hr-2025-156', chunksCreated: 25, success: true, message: 'Success' },
-      { documentId: 'dot-2024-007', chunksCreated: 11, success: true, message: 'Success' },
-      { documentId: 'faa-2025-023', chunksCreated: 13, success: true, message: 'Success' },
-      { documentId: 'nps-2024-001', chunksCreated: 9, success: true, message: 'Success' },
-      { documentId: 'nps-2025-012', chunksCreated: 16, success: true, message: 'Success' }
-    ];
-  }
-
-  private async mockGetAllDocuments(): Promise<DocumentMetadata[]> {
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    return [
-      {
-        documentId: 'hr-2024-001',
-        title: 'Highway Speed Limit Modernization Act of 2024',
-        documentType: 'Federal Legislation',
-        publicationDate: '2023-12-15',
-        effectiveDate: '2024-01-01',
-        issuingAuthority: 'United States Congress',
-        documentNumber: 'H.R. 2024-001',
-        keyProvisions: ['75 mph rural interstate', '65 mph urban highway', '25 mph residential'],
-        supersededBy: 'hr-2025-042'
-      },
-      {
-        documentId: 'hr-2025-042',
-        title: 'Automated Vehicle Speed Integration Act of 2025',
-        documentType: 'Federal Legislation',
-        publicationDate: '2025-08-15',
-        effectiveDate: '2025-09-01',
-        issuingAuthority: 'United States Congress',
-        documentNumber: 'H.R. 2025-042',
-        keyProvisions: ['85 mph autonomous vehicles', 'dynamic speed zones', 'supersedes 2024 Act'],
-        supersedes: ['hr-2024-001']
-      }
-      // ... additional mock documents
-    ];
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

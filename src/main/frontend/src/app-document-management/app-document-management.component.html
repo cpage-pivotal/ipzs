@@ -164,9 +164,11 @@
                       <div class="info-row">
                         <strong>{{ translationService.t('document.id') }}:</strong> {{ doc.documentId }}
                       </div>
-                      <div class="info-row">
-                        <strong>{{ translationService.t('document.number') }}:</strong> {{ doc.documentNumber }}
-                      </div>
+                      @if (doc.documentNumber) {
+                        <div class="info-row">
+                          <strong>{{ translationService.t('document.number') }}:</strong> {{ doc.documentNumber }}
+                        </div>
+                      }
                       <div class="info-row">
                         <strong>{{ translationService.t('document.authority') }}:</strong> {{ doc.issuingAuthority }}
                       </div>
@@ -183,7 +185,7 @@
                       }
                     </div>
 
-                    @if (doc.keyProvisions.length > 0) {
+                    @if (doc.keyProvisions && doc.keyProvisions.length > 0) {
                       <div class="provisions-section">
                         <h4>{{ translationService.t('document.provisions') }}</h4>
                         <mat-chip-set>
