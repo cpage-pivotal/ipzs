@@ -1,4 +1,4 @@
-<div class="messages-container" role="log" aria-label="Chat messages" aria-live="polite">
+<div class="messages-container" #messagesContainer role="log" aria-label="Chat messages" aria-live="polite">
   @for (message of messages(); track $index) {
     <div class="message-wrapper" [ngClass]="'message-' + message.type">
       <mat-card class="message-card" [ngClass]="message.type" [attr.aria-label]="message.type + ' message'" role="article">
