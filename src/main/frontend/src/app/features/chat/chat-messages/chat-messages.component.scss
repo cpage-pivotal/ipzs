@@ -38,10 +38,14 @@
 
 .message-card.user {
   background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+  border-radius: var(--mat-sys-corner-medium) var(--mat-sys-corner-small) var(--mat-sys-corner-medium) var(--mat-sys-corner-medium);
 }
 
 .message-card.assistant {
-  background-color: var(--mat-sys-surface-variant);
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border-radius: var(--mat-sys-corner-small) var(--mat-sys-corner-medium) var(--mat-sys-corner-medium) var(--mat-sys-corner-medium);
 }
 
 .message-content {
@@ -66,4 +70,18 @@
 .welcome-message mat-card {
   text-align: center;
   max-width: 500px;
+  background-color: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  border-radius: var(--mat-sys-corner-extra-large);
+  @include mat.elevation(3);
+
+  h3 {
+    color: var(--mat-sys-tertiary);
+    margin-bottom: var(--mat-spacing-2);
+  }
+
+  p {
+    color: var(--mat-sys-on-tertiary-container);
+    opacity: 0.8;
+  }
 }

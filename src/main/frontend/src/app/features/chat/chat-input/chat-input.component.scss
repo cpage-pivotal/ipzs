@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 .chat-input-container {
   display: flex;
   gap: var(--mat-spacing-2);
@@ -25,8 +27,20 @@
   margin-top: var(--mat-spacing-1);
   transition: all 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
   flex-shrink: 0;
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  border-radius: var(--mat-sys-corner-medium);
 
   &:hover {
     transform: translateY(-1px);
+    background-color: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+    @include mat.elevation(4);
+  }
+
+  &:disabled {
+    background-color: var(--mat-sys-surface-variant);
+    color: var(--mat-sys-on-surface-variant);
+    transform: none;
   }
 }

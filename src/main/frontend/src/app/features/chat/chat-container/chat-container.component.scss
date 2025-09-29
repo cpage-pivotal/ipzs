@@ -19,6 +19,8 @@
   position: relative;
   overflow: hidden;
   @include mat.elevation(2);
+  background-color: var(--mat-sys-surface-container-low);
+  border-radius: var(--mat-sys-corner-large);
 }
 
 .header-content {
@@ -57,9 +59,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--mat-sys-surface-container);
+  background-color: rgba(var(--mat-sys-surface-container-rgb), 0.8);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: var(--mat-sys-primary);
+  }
 }
