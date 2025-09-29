@@ -6,7 +6,7 @@ export interface ChatMessage {
 
 export interface ChatRequest {
   message: string;
-  dateContext: Date;
+  dateContext: string; // ISO date string to match backend LocalDate
   sessionId?: string;
 }
 
