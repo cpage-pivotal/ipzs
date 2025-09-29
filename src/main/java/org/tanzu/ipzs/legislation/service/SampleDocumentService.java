@@ -338,20 +338,22 @@ public class SampleDocumentService {
             SECTION 1. SHORT TITLE
             This Act may be cited as the "Automated Vehicle Speed Integration Act of 2025".
             
-            SECTION 2. SUPERSESSION
-            This Act supersedes the Highway Speed Limit Modernization Act of 2024 (H.R. 2024-001).
+            SECTION 2. SUPERSESSION AND AMENDMENTS
+            This Act supersedes the Highway Speed Limit Modernization Act of 2024 (H.R. 2024-001) and amends specific provisions thereof.
             
-            SECTION 3. AUTOMATED VEHICLE PROVISIONS
-            (a) CERTIFIED AUTONOMOUS VEHICLES - Vehicles certified as Level 4 or Level 5 autonomous may travel up to 85 miles per hour on rural interstate highways.
+            SECTION 3. AMENDMENT TO SECTION 3(a) OF THE 2024 ACT
+            Section 3(a) of the Highway Speed Limit Modernization Act of 2024 is hereby amended as follows:
+            (a) The rural interstate speed limit of 75 miles per hour established in the 2024 Act is increased to 80 miles per hour for all manually-operated vehicles.
+            (b) Vehicles certified as Level 4 or Level 5 autonomous may travel up to 85 miles per hour on rural interstate highways.
             
-            (b) DYNAMIC SPEED ZONES - Highway authorities may establish dynamic speed limit zones that adjust based on:
+            SECTION 4. DYNAMIC SPEED ZONES
+            (a) ESTABLISHMENT - Highway authorities may establish dynamic speed limit zones that adjust based on:
             (1) Real-time traffic conditions
             (2) Weather conditions
             (3) Construction activities
             (4) Emergency situations
             
-            SECTION 4. TRADITIONAL VEHICLE LIMITS
-            Traditional manually-operated vehicles remain subject to the 75 mph limit established in the 2024 Act.
+            (b) SUPERSESSION OF STATIC LIMITS - In areas designated as dynamic speed zones, the static limits established in Section 3(a) and 3(b) of the 2024 Act are superseded by dynamically determined limits.
             
             SECTION 5. ENFORCEMENT TECHNOLOGY
             (a) AUTOMATED ENFORCEMENT - Automated speed enforcement systems may be deployed on highways with dynamic speed zones.
@@ -403,27 +405,36 @@ public class SampleDocumentService {
             This Act may be cited as the "Cannabis Legalization and Regulation Act of 2025".
             
             SECTION 2. CONTROLLED SUBSTANCES ACT AMENDMENT
-            Cannabis is hereby removed entirely from all schedules of the Controlled Substances Act.
+            Cannabis is hereby removed entirely from all schedules of the Controlled Substances Act, superseding its Schedule III classification under the Controlled Substance Reform Act of 2024 (DEA-2024-001).
             
-            SECTION 3. FEDERAL TAXATION FRAMEWORK
+            SECTION 3. AMENDMENT TO SECTION 4(b) OF THE 2024 ACT
+            Section 4(b) of the Controlled Substance Reform Act of 2024, which established personal possession limits of 1 ounce for medical use, is hereby amended:
+            (a) Personal possession limit for adults 21 and over is increased to 2 ounces for any lawful purpose.
+            (b) No prescription or medical authorization is required for possession within this limit.
+            (c) The medical-use-only restriction established in the 2024 Act is hereby eliminated.
+            
+            SECTION 4. FEDERAL TAXATION FRAMEWORK
             (a) EXCISE TAX - A federal excise tax of 10% shall be imposed on retail cannabis sales.
             
-            (b) BUSINESS TAX DEDUCTIONS - Cannabis businesses may claim standard business tax deductions under Section 280E of the Internal Revenue Code.
+            (b) BUSINESS TAX DEDUCTIONS - Cannabis businesses may claim standard business tax deductions under Section 280E of the Internal Revenue Code, superseding the restrictions that applied under the 2024 Act's Schedule III classification.
             
-            SECTION 4. INTERSTATE COMMERCE
+            SECTION 5. INTERSTATE COMMERCE
             (a) COMMERCE CLAUSE - Cannabis may be transported across state lines where legal in both states.
             
             (b) BANKING SERVICES - Financial institutions may provide banking services to licensed cannabis businesses without federal penalty.
             
-            SECTION 5. CRIMINAL JUSTICE REFORM
-            (a) EXPUNGEMENT PROGRAM - The Attorney General shall establish a program to expunge federal cannabis convictions for non-violent offenses.
+            SECTION 6. AMENDMENT TO SECTION 3(a) OF THE 2024 ACT
+            Section 3(a) of the Controlled Substance Reform Act of 2024, requiring federal DEA licensing for distribution, is hereby replaced with a registration system administered by the Department of Agriculture.
+            
+            SECTION 7. CRIMINAL JUSTICE REFORM
+            (a) EXPUNGEMENT PROGRAM - The Attorney General shall establish a program to expunge federal cannabis convictions for non-violent offenses, including those prosecuted under the licensing requirements of the 2024 Act.
             
             (b) RELEASE PROGRAM - Individuals currently incarcerated solely for non-violent cannabis offenses shall be eligible for immediate release.
             
-            SECTION 6. STATE AUTHORITY
+            SECTION 8. STATE AUTHORITY
             Nothing in this Act requires states to legalize cannabis or prevents states from maintaining prohibition.
             
-            SECTION 7. EFFECTIVE DATE
+            SECTION 9. EFFECTIVE DATE
             This Act shall take effect on September 1, 2025.
             """;
     }
@@ -463,24 +474,34 @@ public class SampleDocumentService {
             SECTION 1. SHORT TITLE
             This Act may be cited as the "Comprehensive Immigration Reform Act of 2025".
             
-            SECTION 2. PATHWAY TO CITIZENSHIP
+            SECTION 2. AMENDMENT TO SECTION 3(a) OF THE 2024 ACT
+            Section 3(a) of the Border Security Enhancement Act of 2024 (DHS-2024-003), which established 2-year visitor visa validity periods, is hereby amended:
+            (a) B-1/B-2 visitor visas for eligible countries are extended to 5-year validity periods.
+            (b) The 2% overstay threshold established in Section 3(b) of the 2024 Act is reduced to 1% for 5-year visa eligibility.
+            
+            SECTION 3. PATHWAY TO CITIZENSHIP
             (a) ELIGIBILITY - Undocumented immigrants present in the US for 8+ years may apply for legal status.
             
             (b) REQUIREMENTS - Applicants must pass background checks, pay back taxes, and demonstrate English proficiency.
             
             (c) TIMELINE - Legal permanent residency available after 5 years, citizenship after additional 3 years.
             
-            SECTION 3. GREEN CARD REFORMS
-            (a) PER-COUNTRY LIMITS ELIMINATED - The 7% per-country limit for employment-based green cards is abolished.
+            SECTION 4. AMENDMENT TO SECTION 4 OF THE 2024 ACT
+            Section 4 of the Border Security Enhancement Act of 2024, which increased the H-1B visa cap by 15% to 74,750 visas, is hereby superseded:
+            (a) The annual H-1B visa cap is increased to 85,000 visas, representing a 30% increase from the pre-2024 baseline.
+            (b) The additional 20,000 visas for advanced degree holders established in the 2024 Act is increased to 30,000 visas.
+            
+            SECTION 5. GREEN CARD REFORMS
+            (a) PER-COUNTRY LIMITS ELIMINATED - The 7% per-country limit for employment-based green cards is abolished, addressing backlogs that persisted under the 2024 Act.
             
             (b) FAMILY REUNIFICATION - Processing times for family-based immigration reduced through increased annual limits.
             
-            SECTION 4. REGIONAL IMMIGRATION COUNCILS
+            SECTION 6. REGIONAL IMMIGRATION COUNCILS
             (a) ESTABLISHMENT - Regional councils with local business and community representation shall advise on immigration needs.
             
-            (b) AUTHORITY - Councils may recommend regional visa allocations based on economic conditions.
+            (b) AUTHORITY - Councils may recommend regional visa allocations based on economic conditions, supplementing the biometric verification requirements established in Section 2 of the 2024 Act.
             
-            SECTION 5. EFFECTIVE DATE
+            SECTION 7. EFFECTIVE DATE
             This Act shall take effect on September 1, 2025.
             """;
     }
@@ -519,22 +540,28 @@ public class SampleDocumentService {
             SECTION 1. SHORT TITLE
             This Act may be cited as the "Enhanced Air Travel Standards Act of 2025".
             
-            SECTION 2. EXPANDED BAGGAGE ALLOWANCES
-            (a) INCREASED WEIGHT LIMIT - Free checked baggage allowance increased to 70 pounds.
+            SECTION 2. AMENDMENT TO SECTION 2(a) OF THE 2024 ACT
+            Section 2(a) of the Airline Consumer Protection Act of 2024 (DOT-2024-007), which established a 50-pound free checked baggage limit, is hereby superseded:
+            (a) Free checked baggage allowance is increased to 70 pounds for all domestic flights exceeding 2 hours.
+            (b) Airlines may not charge additional fees for bags between 50 and 70 pounds.
             
-            (b) SUPERSESSION - This provision supersedes the 50-pound limit in the 2024 Consumer Protection Act.
+            SECTION 3. AMENDMENT TO SECTION 3 OF THE 2024 ACT
+            Section 3 of the Airline Consumer Protection Act of 2024, which mandated $200 per day compensation for delayed baggage, is hereby enhanced:
+            (a) Mandatory compensation is increased to $300 per day for baggage delayed more than 24 hours.
+            (b) Maximum liability is increased from $1,500 to $2,500 per bag.
+            (c) Airlines must provide compensation within 48 hours of baggage recovery.
             
-            SECTION 3. SMART LUGGAGE PROVISIONS
-            (a) REMOVABLE BATTERY REQUIREMENT - Smart luggage with removable lithium batteries allowed as carry-on.
+            SECTION 4. SMART LUGGAGE PROVISIONS
+            (a) REMOVABLE BATTERY REQUIREMENT - Smart luggage with removable lithium batteries allowed as carry-on, supplementing the carry-on standardization requirements of Section 4 of the 2024 Act.
             
             (b) TSA COORDINATION - TSA shall develop screening procedures for smart luggage within 90 days.
             
-            SECTION 4. BAGGAGE TRACKING SYSTEMS
+            SECTION 5. BAGGAGE TRACKING SYSTEMS
             (a) REAL-TIME TRACKING - All airports must implement real-time baggage tracking systems.
             
-            (b) PASSENGER ACCESS - Passengers must have mobile access to baggage location data.
+            (b) PASSENGER ACCESS - Passengers must have mobile access to baggage location data, enhancing consumer protections established in the 2024 Act.
             
-            SECTION 5. EFFECTIVE DATE
+            SECTION 6. EFFECTIVE DATE
             This Act shall take effect on September 1, 2025.
             """;
     }
@@ -573,23 +600,28 @@ public class SampleDocumentService {
             SECTION 1. SHORT TITLE
             This Act may be cited as the "Indigenous Heritage Recognition Act of 2025".
             
-            SECTION 2. TRIBAL CONSULTATION REQUIREMENTS
-            (a) MANDATORY CONSULTATION - All park naming decisions must include consultation with affected tribal nations.
+            SECTION 2. AMENDMENT TO SECTION 3(a) OF THE 2024 ACT
+            Section 3(a) of the National Park Heritage Preservation Act of 2024 (NPS-2024-001), which established a 2-year public comment period for name changes, is hereby amended:
+            (a) For changes restoring original Indigenous names, the public comment period is reduced to 6 months.
+            (b) The 2-year comment period established in the 2024 Act remains in effect for all other naming changes.
             
-            (b) CONSULTATION TIMELINE - Tribal nations have 6 months to provide input on proposed changes.
+            SECTION 3. TRIBAL CONSULTATION REQUIREMENTS
+            (a) MANDATORY CONSULTATION - All park naming decisions must include consultation with affected tribal nations, supplementing but not replacing the Naming Review Committee established in Section 2 of the 2024 Act.
             
-            SECTION 3. INDIGENOUS NAMES COUNCIL
-            (a) ESTABLISHMENT - An Indigenous Names Council with representatives from major tribal confederations.
+            (b) CONSULTATION TIMELINE - Tribal nations have 6 months to provide input on proposed changes, running concurrently with the public comment period.
             
-            (b) VETO AUTHORITY - Council may veto naming decisions that conflict with indigenous heritage.
+            SECTION 4. AMENDMENT TO SECTION 2(b) OF THE 2024 ACT
+            Section 2(b) of the National Park Heritage Preservation Act of 2024, which established committee composition, is hereby expanded:
+            (a) The Indigenous Names Council shall include representatives from major tribal confederations.
+            (b) This Council operates alongside the existing Naming Review Committee established in the 2024 Act.
+            (c) The Council may veto naming decisions that conflict with Indigenous heritage, requiring a unanimous vote of both committees to proceed.
             
-            SECTION 4. RESTORATION PROGRAM
-            (a) 50-PARK INITIATIVE - Program to restore original indigenous names to 50 national parks by 2030.
+            SECTION 5. RESTORATION PROGRAM
+            (a) 50-PARK INITIATIVE - Program to restore original Indigenous names to 50 national parks by 2030.
             
             (b) FUNDING - $10 million annual appropriation for research and implementation.
             
-            SECTION 5. SUPERSESSION
-            This Act supersides conflicting provisions of the National Park Heritage Preservation Act of 2024.
+            (c) PRIORITY PROCESS - Parks with confirmed pre-colonial Indigenous names receive expedited processing under the reduced 6-month comment period established in Section 2(a).
             
             SECTION 6. EFFECTIVE DATE
             This Act shall take effect on September 1, 2025.
