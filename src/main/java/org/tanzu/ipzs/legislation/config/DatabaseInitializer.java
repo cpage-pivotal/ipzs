@@ -7,15 +7,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 @Configuration
+@Profile("!cloud")
 public class DatabaseInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
@@ -44,7 +45,7 @@ public class DatabaseInitializer {
 
             // Check if database exists
             var resultSet = statement.executeQuery(
-                "SELECT 1 FROM pg_database WHERE datname = '" + databaseName + "'");
+                    "SELECT 1 FROM pg_database WHERE datname = '" + databaseName + "'");
 
             if (!resultSet.next()) {
                 logger.info("Database '{}' does not exist. Creating...", databaseName);
@@ -63,16 +64,17 @@ public class DatabaseInitializer {
     }
 
     private String extractDatabaseName(String url) {
-        // Extract database name from jdbc:postgresql://localhost:5432/ipzs_legislation
         int lastSlash = url.lastIndexOf('/');
         if (lastSlash == -1) {
             throw new IllegalArgumentException("Invalid database URL format: " + url);
         }
-        return url.substring(lastSlash + 1);
+        String dbNameWithParams = url.substring(lastSlash + 1);
+        // Remove query parameters if present
+        int queryStart = dbNameWithParams.indexOf('?');
+        return queryStart > 0 ? dbNameWithParams.substring(0, queryStart) : dbNameWithParams;
     }
 
     private String getServerUrl(String url) {
-        // Convert jdbc:postgresql://localhost:5432/ipzs_legislation to jdbc:postgresql://localhost:5432/postgres
         int lastSlash = url.lastIndexOf('/');
         if (lastSlash == -1) {
             throw new IllegalArgumentException("Invalid database URL format: " + url);

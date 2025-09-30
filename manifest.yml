@@ -1,0 +1,11 @@
+---
+applications:
+  - name: ipzs
+    buildpacks:
+      - java_buildpack_offline
+    memory: 1G
+    instances: 1
+    path: target/ipzs-1.0.0.jar
+    env:
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+      SPRING_AI_OPENAI_API_KEY: ((openai-key))
