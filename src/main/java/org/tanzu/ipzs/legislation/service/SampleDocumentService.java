@@ -1,27 +1,35 @@
 package org.tanzu.ipzs.legislation.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.tanzu.ipzs.legislation.model.entity.LegislationDocument;
 import org.tanzu.ipzs.legislation.repository.LegislationDocumentRepository;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 @Service
 public class SampleDocumentService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SampleDocumentService.class);
+
     @Autowired
     private LegislationDocumentRepository documentRepository;
 
     @Autowired
     private VectorStore vectorStore;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     private final TextSplitter textSplitter = new TokenTextSplitter(500, 100, 5, 10000, true);
 
@@ -44,51 +52,86 @@ public class SampleDocumentService {
             String message
     ) {}
 
-    @Transactional
+    /**
+     * Generate and ingest sample documents.
+     * Each document is processed in its own transaction using TransactionTemplate.
+     */
     public List<IngestionResult> generateAndIngestSampleDocuments() {
-        // No CompletableFuture.supplyAsync() - runs on current thread
+        logger.info("Starting sample document generation");
         var templates = createDocumentTemplates();
-        return templates.stream()
-                .map(this::processDocumentTemplate)
-                .toList();
-    }
+        var results = new ArrayList<IngestionResult>();
 
-    private IngestionResult processDocumentTemplate(DocumentTemplate template) {
-        try {
-            var documentId = generateDocumentId(template);
+        for (var template : templates) {
+            try {
+                // Use TransactionTemplate to execute each document in its own transaction
+                var result = transactionTemplate.execute(status -> {
+                    try {
+                        return processDocumentTemplate(template);
+                    } catch (Exception e) {
+                        logger.error("Error processing document, rolling back: {}", template.title(), e);
+                        status.setRollbackOnly();
+                        throw e;
+                    }
+                });
 
-            // Check if document already exists
-            if (documentRepository.existsByDocumentId(documentId)) {
-                return new IngestionResult(
-                        documentId,
+                results.add(result);
+                logger.info("Processed document: {} - Success: {}", result.documentId(), result.success());
+
+            } catch (Exception e) {
+                logger.error("Failed to process document template: {}", template.title(), e);
+                results.add(new IngestionResult(
+                        generateDocumentId(template),
                         0,
                         false,
-                        "Document already exists: " + template.title()
-                );
+                        "Exception during processing: " + e.getMessage()
+                ));
             }
+        }
 
-            // Create and save legislation document (metadata only)
-            var document = createLegislationDocument(template);
-            documentRepository.save(document);
+        logger.info("Completed sample document generation. Total: {}, Success: {}",
+                results.size(),
+                results.stream().filter(IngestionResult::success).count());
 
-            // Create vector documents and add directly to vector store
-            var vectorDocuments = createVectorDocuments(template, documentId);
-            vectorStore.add(vectorDocuments);
+        return results;
+    }
 
+    /**
+     * Process a single document template.
+     * This method is called within a transaction managed by TransactionTemplate.
+     */
+    private IngestionResult processDocumentTemplate(DocumentTemplate template) {
+        var documentId = generateDocumentId(template);
+        logger.debug("Processing document: {}", documentId);
+
+        // Check if document already exists
+        if (documentRepository.existsByDocumentId(documentId)) {
+            logger.info("Document already exists: {}", documentId);
             return new IngestionResult(
                     documentId,
-                    vectorDocuments.size(),
-                    true,
-                    "Successfully ingested document: " + template.title()
-            );
-        } catch (Exception e) {
-            return new IngestionResult(
-                    generateDocumentId(template),
                     0,
                     false,
-                    "Failed to ingest document: " + e.getMessage()
+                    "Document already exists: " + template.title()
             );
         }
+
+        // Create and save legislation document (metadata only)
+        var document = createLegislationDocument(template);
+        documentRepository.save(document);
+        logger.debug("Saved legislation document to database: {}", documentId);
+
+        // Create vector documents and add to vector store
+        var vectorDocuments = createVectorDocuments(template, documentId);
+        logger.debug("Created {} vector document chunks for: {}", vectorDocuments.size(), documentId);
+
+        vectorStore.add(vectorDocuments);
+        logger.debug("Added vector documents to store for: {}", documentId);
+
+        return new IngestionResult(
+                documentId,
+                vectorDocuments.size(),
+                true,
+                "Successfully ingested document: " + template.title()
+        );
     }
 
     private LegislationDocument createLegislationDocument(DocumentTemplate template) {

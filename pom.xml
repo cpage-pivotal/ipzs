@@ -114,7 +114,6 @@
                 <version>1.15.1</version>
                 <configuration>
                     <workingDirectory>src/main/frontend</workingDirectory>
-                    <installDirectory>target</installDirectory>
                 </configuration>
                 <executions>
                     <!-- Install Node.js and npm -->
@@ -147,6 +146,27 @@
                         </goals>
                         <configuration>
                             <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>move-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sh</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>mkdir -p ${project.basedir}/target/classes/static &amp;&amp; cp -r ${project.basedir}/src/main/frontend/dist/frontend/browser/* ${project.basedir}/target/classes/static</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

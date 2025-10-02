@@ -87,7 +87,7 @@ public class DateAwareQuestionAnswerAdvisor implements BaseAdvisor {
     @Autowired
     public DateAwareQuestionAnswerAdvisor(VectorStore vectorStore) {
         this.vectorStore = vectorStore;
-        this.defaultSearchRequest = SearchRequest.builder().topK(5).similarityThreshold(0.7).build();
+        this.defaultSearchRequest = SearchRequest.builder().topK(5).similarityThreshold(0.4).build();
         this.promptTemplate = DEFAULT_PROMPT_TEMPLATE;
         this.scheduler = DEFAULT_SCHEDULER;
         this.order = 0;
